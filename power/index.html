@@ -1,1 +1,102 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="MONSTAGE トレカ戦闘力メーカー">
+<title>MONSTAGE トレカ戦闘力メーカー</title>
+<style>
+:root{--bg:#0d1016;--panel:#171b24;--panel2:#202632;--line:#313948;--text:#f7f8fb;--muted:#aab2c1;--pink:#ff5c8a;--purple:#8b5cff;--gold:#ffd166}
+*{box-sizing:border-box} body{margin:0;min-height:100vh;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text);background:radial-gradient(circle at 15% 0%,rgba(255,92,138,.18),transparent 28rem),radial-gradient(circle at 90% 10%,rgba(139,92,255,.16),transparent 24rem),var(--bg)}
+.wrap{width:min(100% - 22px,720px);margin:auto;padding:26px 0 48px}.hero{text-align:center}.brand{color:#ff9db8;letter-spacing:.18em;font-size:.82rem;font-weight:900}h1{margin:8px 0;font-size:clamp(2rem,7vw,3.2rem);line-height:1.08}.lead{color:var(--muted);line-height:1.7;margin:0 auto;max-width:600px}
+.card{background:rgba(23,27,36,.96);border:1px solid var(--line);border-radius:22px;padding:20px;margin-top:16px;box-shadow:0 18px 50px rgba(0,0,0,.3)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}label{display:block;color:var(--muted);font-size:.85rem;font-weight:800;margin-bottom:7px}input,select{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:13px 14px;color:var(--text);font-size:1rem}.hint{color:var(--muted);font-size:.73rem;margin-top:5px}
+button{cursor:pointer}.calc{width:100%;border:0;border-radius:16px;padding:16px;margin-top:17px;color:white;font-size:1.05rem;font-weight:900;background:linear-gradient(135deg,var(--pink),var(--purple))}
+.error{display:none;color:#ffabab;font-size:.85rem;font-weight:800;margin-top:10px}
+.result{display:none;text-align:center;background:radial-gradient(circle at top right,rgba(255,209,102,.14),transparent 14rem),linear-gradient(160deg,#191f2a,#11151d)}.result.show{display:block;animation:pop .25s ease-out}@keyframes pop{from{opacity:.4;transform:scale(.98)}to{opacity:1;transform:scale(1)}}
+.rank{color:var(--gold);font-weight:1000;letter-spacing:.1em}.power{font-size:clamp(3.8rem,15vw,6.8rem);font-weight:1000;letter-spacing:-.05em;line-height:1;margin:10px 0 4px}.powerlabel{color:var(--muted);font-size:.78rem;font-weight:800}.title{font-size:1.6rem;font-weight:1000;margin:18px 0 7px}.comment{color:var(--muted);line-height:1.7;margin:auto;max-width:570px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:18px}.stat{background:rgba(255,255,255,.045);border:1px solid var(--line);border-radius:13px;padding:11px 5px}.stat b{display:block}.stat small{color:var(--muted);font-size:.68rem}
+.share{width:100%;border:0;border-radius:14px;padding:14px;margin-top:15px;color:white;font-weight:900;background:#315fe8}.provided{color:#7d8798;font-size:.7rem;letter-spacing:.1em;font-weight:800;margin-top:13px}.note{color:var(--muted);font-size:.78rem;line-height:1.7}footer{text-align:center;color:#727b8d;font-size:.73rem;margin-top:20px}
+@media(max-width:600px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.card{padding:16px;border-radius:18px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<section class="hero">
+<div class="brand">MONSTAGE</div>
+<h1>トレカ戦闘力メーカー</h1>
+<p class="lead">4つの項目から、あなたのトレカ戦闘力を測定します。</p>
+</section>
 
+<section class="card">
+<div class="grid">
+<div><label for="owned">所持トレカ（推定）</label><input id="owned" type="number" min="0" step="1" value="100" inputmode="numeric"><div class="hint">だいたいの枚数でOK</div></div>
+<div><label for="rare">激レアトレカ（推定）</label><input id="rare" type="number" min="0" step="1" value="3" inputmode="numeric"><div class="hint">自分基準の「激レア」でOK</div></div>
+<div><label for="years">トレカ収集歴</label><select id="years"><option value="0">半年未満</option><option value="1">半年〜1年</option><option value="2" selected>1〜2年</option><option value="3">2〜3年</option><option value="4">3〜5年</option><option value="5">5年以上</option></select></div>
+<div><label for="spirit">推しへの執念</label><select id="spirit"><option value="0">わりと冷静</option><option value="1">推しはちゃんと集めたい</option><option value="2" selected>推しは絶対に回収する</option><option value="3">交換・購入を駆使して追う</option><option value="4">出るまで終われない</option></select></div>
+</div>
+<div id="error" class="error"></div>
+<button id="calc" class="calc">戦闘力を測定する</button>
+</section>
+
+<section id="result" class="card result">
+<div id="rank" class="rank"></div>
+<div id="power" class="power"></div>
+<div class="powerlabel">TRADING CARD POWER</div>
+<div id="title" class="title"></div>
+<p id="comment" class="comment"></p>
+<div class="stats">
+<div class="stat"><b id="sOwned"></b><small>所持トレカ</small></div>
+<div class="stat"><b id="sRare"></b><small>激レア</small></div>
+<div class="stat"><b id="sYears"></b><small>収集歴</small></div>
+<div class="stat"><b id="sSpirit"></b><small>推しへの執念</small></div>
+</div>
+<button id="share" class="share">結果を共有</button>
+<div class="provided">MONSTAGE提供</div>
+</section>
+
+<section class="card"><div class="note"><strong>この診断について</strong><br>戦闘力はMONSTAGE独自の遊び用スコアです。市場価値やトレカの優劣を示すものではありません。</div></section>
+<footer>MONSTAGE Mini Tools</footer>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+const yearLabels=["半年未満","半年〜1年","1〜2年","2〜3年","3〜5年","5年以上"];
+const spiritLabels=["わりと冷静","推しはちゃんと集めたい","推しは絶対に回収する","交換・購入を駆使して追う","出るまで終われない"];
+let shareText="";
+
+function classification(p){
+ if(p<1500)return["RANK C","トレカ村の新戦士","まだ伸びしろだらけ。財布も比較的平和な時代です。"];
+ if(p<3000)return["RANK B","推し回収部隊","着実に戦力増強中。収納用品が気になり始める頃です。"];
+ if(p<5000)return["RANK A","トレカ熟練兵","十分な戦力。普通の人には枚数を言わないほうが平和かもしれません。"];
+ if(p<7500)return["RANK S","トレカ戦闘民族","かなりの高戦闘力。ランダム封入の文字を見ると身体が反応します。"];
+ if(p<10000)return["RANK SS","推し回収の覇者","推しを逃さない強い意志と物量を兼ね備えています。"];
+ return["RANK MONSTER","トレカ界の最終形態","測定器のほうが心配になる領域。もはやコレクションではなく歴史です。"];
+}
+
+$("calc").onclick=()=>{
+ const owned=Number($("owned").value),rare=Number($("rare").value),years=Number($("years").value),spirit=Number($("spirit").value);
+ if(!Number.isInteger(owned)||owned<0||!Number.isInteger(rare)||rare<0||rare>owned){
+   $("error").textContent=rare>owned?"激レア枚数は所持枚数以下にしてください。":"枚数は0以上の整数で入力してください。";
+   $("error").style.display="block"; $("result").classList.remove("show"); return;
+ }
+ $("error").style.display="none";
+
+ // 所持数だけで無限に暴走しないよう平方根を使用。レア・歴・執念をしっかり加点。
+ const power=Math.round(Math.sqrt(owned)*300 + Math.sqrt(rare)*550 + years*500 + spirit*650);
+ const [rank,title,comment]=classification(power);
+
+ $("rank").textContent=rank;$("power").textContent=power.toLocaleString("ja-JP");$("title").textContent=title;$("comment").textContent=comment;
+ $("sOwned").textContent=owned.toLocaleString("ja-JP")+"枚";$("sRare").textContent=rare.toLocaleString("ja-JP")+"枚";$("sYears").textContent=yearLabels[years];$("sSpirit").textContent=spiritLabels[spirit];
+ shareText=`MONSTAGE トレカ戦闘力メーカー\n\n戦闘力：${power.toLocaleString("ja-JP")}\n${rank}\n称号：${title}\n\nあなたのトレカ戦闘力は？\n#MONSTAGE #トレカ戦闘力`;
+ $("result").classList.add("show");$("result").scrollIntoView({behavior:"smooth",block:"start"});
+};
+
+$("share").onclick=async()=>{
+ if(!shareText)return;
+ if(navigator.share){try{await navigator.share({title:"MONSTAGE トレカ戦闘力メーカー",text:shareText,url:location.href})}catch(e){}}
+ else{await navigator.clipboard.writeText(shareText+"\n"+location.href);$("share").textContent="コピーしました";setTimeout(()=>$("share").textContent="結果を共有",1300)}
+};
+</script>
+</body>
+</html>
