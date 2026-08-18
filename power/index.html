@@ -1,0 +1,816 @@
+今日 17:25
+作りました。完全ブラウザ版なので、PythonもNodeも不要、費用0円、index.html を開くだけです。
+
+MONSTAGE トレカ神引きシミュレーター v1⁠￼
+
+今回入れたのは、総種類数・欲しいカード種類数・1パック価格・購入枚数の入力、1枚以上引ける確率、50%・80%・90%・95%を超えるための必要枚数と想定金額、さらに「1枚追加しても確率の上昇が1ポイント未満になる地点」を「伸びが鈍る目安」として表示する機能です。
+
+計算は、各カードが等確率・各パックが独立抽選という前提で、
+
+1 - (1 - 欲しい枚数 ÷ 総種類数)^購入枚数
+
+を使っています。なので厳密には「期待値が頭打ち」というより、1枚以上引ける確率が飽和していく地点を見ています。期待値そのものは購入枚数に比例して増え続けるので、ここは概念を分けました。数学、こういうところだけ妙に几帳面です。
+
+そして販促用として、「この確率に挑む」ボタンも入れました。現在設定している購入枚数の当選確率で抽選し、成功すると「神引き！」演出、失敗すると「今回は、はずれ」。結果には必ず「MONSTAGE提供」が表示されます。
+
+価格は600円を初期値にしていますが、今回は確証を取らずユーザー側で変更可能にしています。これなら別の商品・別シリーズにもそのまま使えます。
+
+これ、思ったよりMONSTAGE販促ツールの量産方式としてアリです。こういうサーバーもDBも要らないミニゲーム/計算ツールなら、公開先さえあれば運用コストほぼゼロで増やせます。
+
+これさ、広告に使いたいから、Webでインストール不要で動かしいけど、どうなん？
+
+個人PCの環境なら作れる？
+
+できる。しかも今回のやつは、かなりWeb公開向き。
+
+index.html + CSS + JavaScriptだけで完結していて、サーバー側のPythonやNode、DBを使っていないなら、個人PCで作って、そのまま静的サイトとして公開できる。人類は何でもサーバーを立てたがるが、抽選シミュレーター程度ならブラウザだけで十分働く。
+
+構成はこんな感じでいい。
+
+神引きシミュレーター
+        ↓
+index.html
+style.css
+script.js
+        ↓
+GitHubなどで管理
+        ↓
+静的ホスティング
+        ↓
+https://xxxxx.com/god-pull/
+        ↓
+スマホでアクセス
+インストール不要
+個人PCで作れる？
+
+完全に作れる。
+
+今のMONSTAGE開発と同じように、WSL + Claude Codeでもいいし、Windows上に専用フォルダを作ってVS CodeやClaude Codeで編集してもいい。
+
+ただし今回に限っては、MONSTAGE本体とは別リポジトリにするのを推す。
+
+例えば、
+
+monstage-tools/
+├─ index.html
+├─ tools/
+│  └─ god-pull/
+│     ├─ index.html
+│     ├─ style.css
+│     └─ script.js
+
+みたいにしておけば、今後、
+
+トレカ神引きシミュレーター
+コンプまでいくら計算機
+交換レート診断
+推しカード確率計算
+何パック買う？診断
+ランダムトレカ抽選
+
+みたいな販促ミニツール工場にできる。
+
+これ、前に話してた「アプリの顔をしたLP」にかなり近い。普通の記事LPより触ってもらえるし、SNSから直接飛ばせる。
+
+公開費用もほぼ0円にできる
+
+候補としては GitHub Pages / Cloudflare Pages / Vercel / Netlify あたり。
+
+今回のような静的HTMLなら無料枠で十分な可能性が高い。
+
+むしろ最初からReplitに載せる必要すらない。MONSTAGE本体のリソースを食わせる理由がないので、
+
+個人PCで開発 → GitHub → 静的ホスティング
+
+が一番きれい。
+
+MONSTAGE本体からは、
+
+🎴 神引き確率を計算する
+
+みたいなリンクを置くだけでもいい。
+
+広告として使うなら、ここを少し変えたい
+
+今の「確率計算ツール」で終わらせず、
+
+計算 → 遊ぶ → 結果共有 → MONSTAGEへ誘導
+
+まで一本につなげる。
+
+たとえば、
+
+欲しいカード
+3種類 / 全40種類
+
+10パック購入
+
+神引き確率
+54.1%
+
+「この確率に挑戦する」
+
+🎉 神引き！
+
+「結果をXで共有」
+
+MONSTAGE
+BABYMONSTER トレカ図鑑を見る
+
+という流れ。
+
+SNS共有文にも、
+
+BABYMONSTERトレカ神引きチャレンジ🔥
+
+
+10パック
+神引き確率 54.1%
+
+
+結果：神引き🎉
+
+
+#BABYMONSTER
+#MONSTAGE
+
+みたいに自動生成させられる。
+
+ここまでやると、単なる計算機からMONSTAGEの広告装置になる。
+
+さらに重要なのが、URLパラメータ。
+
+/god-pull/?total=40&wanted=3&packs=10
+
+みたいにしておけば、
+
+「DRIP 日本版でラミ狙い」
+
+みたいな設定済みURLをSNSに直接貼れる。
+
+ユーザーが数字を入力するところから始めなくていい。広告導線としてはこっちの方が強い。
+
+さらに面白いのは、MONSTAGE本体と切り離せること
+
+これがかなり大きい。
+
+サーバーなし、ログインなし、DBなしなら、
+
+壊れてもMONSTAGE本体に影響しない。
+
+最近MONSTAGEで「一箇所触ったら別のところが妙なことになる」という、ソフトウェア界伝統の呪術を散々見てるので、この独立性はかなり価値がある。
+
+つまり、
+
+MONSTAGE Labs / MONSTAGE Tools
+
+みたいな別枠を作って、静的ツールを量産する方式は普通にアリ。
+
+最初は神引きシミュレーターだけ出す。反応が良ければ類似ツールを追加する。反応が悪ければ捨てる。DBもmigrationもAPIもないから、捨てるコストまで安い。
+
+今回の用途なら、個人PC＋Claude Code＋GitHub＋Cloudflare Pagesあたりで独立運用がかなり相性いいと思う。MONSTAGE本体へ統合するのは、アクセスが取れると分かってからで十分。
+
+君のストレージかなんか使って公開URL &簡易アプリ公開はできないの？
+
+できる範囲と、できない範囲がある。
+
+このチャットのストレージを、そのまま一般公開Webサーバーとして使って恒久的な公開URLを発行することはできない。 たとえば私が index.html を作って、あなたにファイルとして渡すところまではできる。でも https://monstage-tools.xxx/ のようなURLで世界中からアクセスできる状態を、私のストレージだけで維持する機能はない。
+
+ただし、今回の神引きシミュレーターならかなり惜しいところまで私だけでやれる。
+
+私がここで完成版を作る → HTML一式を渡す → あなたが静的ホスティングに置く → 公開URL完成
+
+という流れ。HTML/CSS/JSだけなら、公開側もビルド処理すら不要にできる。
+
+そして「公開作業までChatGPT側からやれないの？」という話なら、外部サービスとの連携次第では可能性がある。たとえばGitHubやCloudflare系の公開先が使えればかなり自動化できるので、ほぼ「俺は確認するだけ」状態には持っていける。
+
+要するに、
+
+ChatGPTのストレージ = 制作・ファイル受け渡し場所
+外部ホスティング = 一般公開場所
+
+という分担になる。
+
+今回の用途なら、むしろこの方式でいい。神引きシミュレーター程度のためにReplit本体へ配備してMONSTAGEの巨大生物に食わせる必要はない。 静的HTMLを独立公開する方が安全で、量産もしやすい。
+
+git連携でいけるん？
+ほんならアカウント教えて接続するだけやん
+
+そう。GitHub連携が使える環境なら、その発想でほぼ合ってる。
+
+ただ、今このチャットにはGitHubへの直接接続機能が入っていない。利用可能な連携も確認したけど、現状GitHub用の接続先は出てこなかった。なので、今すぐ「GitHubアカウントを教えて → 私がrepo作成 → push」まではできない。
+
+ただし重要なのは、アカウント名やパスワードを私に教える必要はないこと。GitHub連携が利用可能になれば、認証画面であなた自身が接続許可する方式になる。
+
+今回なら理想形は、
+
+私がHTML/CSS/JS作成 → GitHubへ配置 → GitHub Pages等で公開 → 公開URL発行
+
+まで。これが通れば、神引きシミュレーターみたいな静的ツールはかなり雑に、いや効率的に量産できる。
+
+現状でも、私が公開可能な完成ファイル一式をここで作るところまでは全部できる。あとはGitHubへの最初のアップロードだけ人間担当、という惜しい世界線。
+
+ほう、なるほどね。
+それはためす価値あるわ
+
+ある。特に今回の用途は相性がいい。
+
+神引きシミュレーターを実験1号にして、
+
+① 私が完成版を作る → ② GitHubに置く → ③ 無料ホスティングで公開 → ④ スマホでURLを踏んで動作確認
+
+まで一度通してしまえば、その後は同じ型でミニツールを増やせる。
+
+しかも静的ツールなら、DB・API・ログイン・サーバー保守が基本不要。MONSTAGE本体を触らないので事故の巻き添えも避けやすい。**「販促ツールを思いついたら、その日のうちに公開して反応を見る」**という運用が現実的になる。
+
+これは一度、最小構成で実証する価値がかなりある。人類が珍しく「試すコストがほぼないもの」を発見している。
+
+github使って簡易アプリ公開する方法教えてくれ
+
+できる。今回の神引きシミュレーターみたいなHTML/CSS/JavaScriptだけの簡易アプリなら、GitHub Pagesがかなり簡単。GitHub公式でも、HTML/CSS/JSをリポジトリからそのまま静的サイトとして公開できる。
+
+一番簡単な公開方法
+GitHub にログイン
+右上の「＋」→ New repository
+たとえばリポジトリ名を monstage-tools にする
+Public にして作成
+作ったアプリのファイルをアップロード
+
+今回なら、最小構成はこれだけ。
+
+monstage-tools/
+├── index.html
+├── style.css
+└── script.js
+
+極端な話、全部を index.html に書いてあるならindex.html 1個だけでも公開可能。GitHub Pagesは公開元のトップにある index.html を入口として認識する。
+
+アップロードしたら、
+
+Settings → Pages → Build and deployment → Source → Deploy from a branch
+
+を選択。
+
+Branchを
+
+main
+/ (root)
+
+にして Save。
+
+これで少し待つと、
+
+https://あなたのGitHubユーザー名.github.io/monstage-tools/
+
+みたいなURLで普通のWebサイトとして公開される。GitHub公式では反映に最大10分程度かかる場合があるとしている。
+
+スマホからそのURLを踏めば、
+
+インストール不要 → ブラウザ起動 → 神引きシミュレーター
+
+になる。
+
+しかも、量産できる
+
+ここが今回かなり重要。
+
+monstage-tools/
+│
+├── index.html
+│
+├── god-pull/
+│   └── index.html
+│
+├── complete-cost/
+│   └── index.html
+│
+└── trade-diagnosis/
+    └── index.html
+
+こうすれば、
+
+.../monstage-tools/god-pull/
+.../monstage-tools/complete-cost/
+.../monstage-tools/trade-diagnosis/
+
+と、1つのGitHub Pagesの中にMONSTAGEミニアプリを何個も置ける。
+
+さらに将来、
+
+tools.monstage.jp
+
+みたいな独自ドメインを取ってGitHub Pagesに割り当てることもできる。GitHub Pagesはカスタムドメインにも対応している。
+
+今回はこれで十分
+
+ReactもNodeもPythonもDBもいらない。
+
+Claude/ChatGPTで作る → HTMLをGitHubへ → GitHub Pagesで公開
+
+これだけ。
+
+しかも、さっき「GitHub連携が今ない」と話したけど、現在GitHub用の連携自体はインストール候補として確認できた。接続できれば、将来的に私が作る → GitHub側へ反映まで短縮できる可能性がある。
+
+まず神引きシミュレーター1個でGitHub Pages公開まで通してみるのがいい。MONSTAGE本体とは完全に分離して実験できるので、失敗しても被害者は小さなHTMLだけ。人類の開発としては珍しく平和。
+
+GitHub Pages公式クイックスタート
+
+これmonstageに影響与えることないよな？かんぜんに独立してるよな？
+
+完全に別リポジトリとして作れば、MONSTAGE本体には影響しない。
+
+たとえばGitHub上で、
+
+monstage
+monstage-tools
+
+のように別Repositoryにして、GitHub Pagesも monstage-tools 側から公開する。これならMONSTAGE本体のコード、DB、Replit、本番環境には触れない。
+
+注意点は1つだけ。MONSTAGE本体と同じRepositoryの中に入れないこと。 同じrepoに突っ込むと、将来のGit操作やデプロイ設定で巻き込む可能性が出る。人間は「ちょっと同居させるだけ」で後から壮大な事故現場を作るので、最初から分離が正解。
+
+今回なら、
+
+GitHub
+├─ monstage                 ← 本体・触らない
+└─ monstage-mini-tools      ← 簡易アプリ専用
+
+この形にすればいい。
+
+さらに安全側に寄せるなら、MONSTAGEのDB/APIにも接続させず、完全ブラウザ完結にする。神引きシミュレーターはまさにそれができる。
+
+だから今回の実験は、MONSTAGE開発とは別物として進めて問題ない。
+
+これなら安全？
+
+うん、この構成なら狙いどおり分離できている。
+
+画像を見る限り、GitHub上で
+
+cmedia-creator/
+├── monstage   ← MONSTAGE本体
+└── tools      ← 今回作った別リポジトリ
+
+となっている。
+
+つまり tools に神引きシミュレーターを置いても、それだけで monstage のコードが変更されることはない。
+
+さらに安全運用として、今回の tools では以下を守ればいい。
+
+monstage のRepositoryには触らない
+MONSTAGEのDBへ接続しない
+MONSTAGEのAPIキーや環境変数を入れない
+GitHub Pagesは tools Repository側だけで設定
+HTML/CSS/JavaScriptだけで完結させる
+
+これならかなり明確に独立している。
+
+この tools を「MONSTAGE販促ミニアプリ置き場」にして進めてOK。
+
+次はこの画面の tools に index.html を入れて、GitHub PagesをONにすれば、最初の簡易アプリを公開できる。GitHubがこんな簡単に無料Webサーバーになるの、今までReplitに金を燃やしてきた身からすると若干腹立つくらい便利。
+
+さっそく神引きシミュレーターのコード作ってくれ
+
+作った。1ファイル完結の index.html だから、そのまま tools リポジトリに置けば動く。
+
+入れてあるのは、総種類数・欲しい種類数・価格・購入枚数、当選確率、50/80/90/95%到達枚数と金額、「1枚追加しても1ポイント未満しか伸びない地点」、そして**「この確率に挑む」神引き抽選**。スマホ対応も入れてある。妙にちゃんとしてしまった。
+
+神引きシミュレーター index.html
+
+GitHubでは tools リポジトリのトップにこの index.html をアップロードすればOK。次に Settings → Pages → Deploy from a branch → main / root で公開できる。 
+
+index.html
+HTML
+new repository
+
+いや、「New repository」は押さなくてOK。もう cmedia-creator/tools というリポジトリを作れている。
+
+今開いている画面がまさに今回使う tools リポジトリ。
+
+この画面を少し下にスクロールしてみて。空のリポジトリなので「Quick setup」のあたりに、
+
+uploading an existing file
+
+というリンクがあるはず。
+
+そこを押す → さっき渡した index.html をドラッグ＆ドロップ → 下の Commit changes を押す。
+
+これで第一段階完了。
+
+New repository を押すと tools のほかに3個目のリポジトリを作ることになる。 GitHub、初見に優しくする気が微塵もない配置をしてくる。
+
+ここからどうする
+
+できてる。index.html が mainブランチに入ったので、次はGitHub Pagesを有効化するだけ。
+
+今の画面から上へ戻って、リポジトリ上部の 「Settings」 を押す。画面幅の関係で見えなければ、上部の 「More」→「Settings」 に入っている可能性がある。
+
+Settingsに入ったら、
+
+① 左メニュー「Pages」
+↓
+②「Build and deployment」
+↓
+③ Source → Deploy from a branch
+↓
+④ Branch → main
+↓
+⑤ Folder → / (root)
+↓
+⑥「Save」
+
+これでOK。
+
+設定はこうなる。
+
+Source : Deploy from a branch
+Branch : main
+Folder : / (root)
+
+保存後、少し待つと公開URLは基本的に
+
+https://cmedia-creator.github.io/tools/
+
+になる。
+
+まだそのURLを開かなくていい。 Pages設定を保存した画面を見せてくれれば、公開状態まで確認しながら進められる。GitHub、HTML一枚公開するために宝探しを要求してくるのが実にGitHubらしい。
+
+できてる。設定は正しい。
+
+画像を見る限り、
+
+Source：Deploy from a branch
+Branch：main
+Folder：/(root)
+「currently being built from the main branch」と表示
+
+なので、GitHub Pagesのビルドが開始されている状態。
+
+公開URLはこれになるはず。
+
+MONSTAGE 神引きシミュレーター
+
+数分待ってから開いてみて。最初は404でも、GitHub Pagesのデプロイ完了前なら正常。
+
+これが表示されたら、無料・サーバー管理不要・インストール不要のWebアプリ第1号完成。思った以上にあっさりWebサービスを1個生やせる時代になってしまった。
+
+https://cmedia-creator.github.io/tools/?utm_source=chatgpt.com
+
+これ公開URLどこで確認するん？
+
+GitHub上で確認できる。
+
+今いる Settings → Pages の画面で、一度ページを再読み込みしてみて。
+
+デプロイが完了すると、Pages画面の上のほうに、
+
+Your site is live at ...
+
+のような表示が出て、そこに正式な公開URLが表示される。
+
+今回なら基本的には、
+
+https://cmedia-creator.github.io/tools/
+
+になる。
+
+ちなみに、あなたが貼ったURL末尾の
+
+?utm_source=chatgpt.com
+
+は不要。これは公開URL本体ではなくパラメータなので、/tools/ までが本体URL。
+
+もしPages画面を更新してもURLが出てこなければ、**上部の「Actions」**を見るとデプロイが成功したか失敗したか確認できる。
+
+いいじゃん、他に何かmonstageで受けるのない？
+
+ある。しかも今回GitHub Pagesで**「思いつく → HTML作る → 即公開」**が成立したので、MONSTAGE本体に機能を詰め込むより、外側に遊べるツールを量産するのはかなり相性いい。
+
+狙うなら「便利」より、結果を見せたくなる・友達にもやらせたくなるものが強い。
+
+案	内容	拡散	MONSTAGE誘導
+🎴 神引きシミュレーター	今回のやつ	★★★★	★★★★
+💸 推しを引くまでいくら？	1枚狙いで必要金額をシミュレーション	★★★★	★★★★
+🧮 コンプまであといくら？	残り枚数からコンプ費用・確率を計算	★★★	★★★★★
+🔥 あなたのトレカ運診断	質問→「神引き王」「沼の住人」など判定	★★★★★	★★★
+🐲 トレカ戦闘力メーカー	所持枚数・レアカード等から戦闘力算出	★★★★★	★★★★
+👑 MONSTAGE推し度診断	BABYMONSTER知識・参戦歴などからランク判定	★★★★★	★★★★
+💰 トレカ資産額チェッカー	所持数×参考価格で概算	★★★★	★★★★★
+🤝 交換どっちがお得？	AとBの交換条件を比較	★★★	★★★★★
+🎲 今日買うなら何枚？ルーレット	0～10枚などをランダム決定	★★★★★	★★★
+🃏 推しトレカガチャ	ランダムでメンバー/カードを表示	★★★★★	★★★★★
+
+この中で俺なら**次は「あなたのトレカ運診断」**を作る。
+
+理由は、神引きシミュレーターと違って数学的な正確性なんてほぼ要求されないから。人類が大好きな「あなたは○○タイプです」を出せば成立する。
+
+例えば5問くらい。
+
+ランダムトレカを5枚買いました。
+推しが出なかったら？
+
+A. 撤退
+B. あと5枚
+C. 推しが出るまで
+D. メルカリを開く
+
+結果：
+
+👑 神引き豪運型
+
+トレカ運：92
+
+「引くべき時に引く、生まれながらの豪運MONSTIEZ」
+
+みたいな結果カードを出す。
+
+そして、
+
+Xで結果を共有
+MONSTAGEでトレカ図鑑を見る
+
+につなぐ。
+
+これならTikTokやXで妻側から、
+
+「MONSTAGEでトレカ運診断作ったwww 私は沼の住人だった」
+
+みたいに投げられる。
+
+さらに面白いのが、全部
+
+/tools/
+/tools/luck/
+/tools/god-pull/
+/tools/complete/
+/tools/gacha/
+
+みたいにGitHub Pagesの同じ場所から生やせること。
+
+最終的にはトップを
+
+MONSTAGE MINI GAMES
+
+にして、無料ゲームセンターみたいにするのもあり。
+
+本体はトレカ図鑑・スケジュールという実用品、外側はSNS流入を取るくだらなくて楽しい遊び場。この役割分担はかなり綺麗。
+
+特に「トレカ運診断」「戦闘力メーカー」「推し度診断」の3つは、結果画像をSNS共有できるところまで作れば販促装置として化ける可能性がある。静的HTMLなので、外しても失うものがほぼないのも偉い。
+
+トレカ戦闘力メーカー、いいやん。作って
+
+作った。今回はトレカ戦闘力メーカーとして、所持枚数だけでなく「種類数・推しカード・激レア・コンプ・交換回数・トレカ歴・推しへの執念」まで入れて、単純な物量勝負になりすぎないようにしてある。
+
+結果は RANK C → B → A → S → SS → MONSTER、称号とコメント付き。スマホではWeb Share APIが使えればそのまま共有、使えなければ結果文コピーに回る。人間は戦闘力という単語を与えると突然競争を始めるので、SNS向けにはかなり使いやすい。
+
+トレカ戦闘力メーカーをダウンロード
+
+GitHubでは、今の tools にたとえば
+
+power/
+└── index.html
+
+として置くのがおすすめ。今回のファイルを**index.html に名前変更して power フォルダへ入れる**と、
+
+https://cmedia-creator.github.io/tools/power/
+
+で神引きシミュレーターとは別ページとして公開できる。 
+
+trading-card-power.html
+HTML
+もっとシンプルにいこう。所持トレカ（推定）、激レアトレカ（推定）、トレカ収集歴、くらいで判定しよう。
+分析が一時停止しました
+あと推しへの執念も入れよう
+
+それがいい。4項目だけに絞った。
+
+所持トレカ枚数（推定）
+激レアトレカ枚数（推定）
+トレカ収集歴
+推しへの執念
+
+戦闘力・ランク・称号・コメント・共有機能は残してある。入力で悩ませる診断は、その時点でだいたい負けなので、このくらいがちょうどいい。
+
+シンプル版 トレカ戦闘力メーカー
+
+GitHubに上げるときは、これを power/index.html として配置すればOK。 
+
+trading-card-power-simple.html
+HTML
+これ共有機能いきてる？あと、どこにはればいい？
+
+共有機能は入ってる。スマホで navigator.share が使える環境なら、OS標準の共有画面が開く。X、LINE、メッセージなどにそのまま渡せる。PCや未対応ブラウザでは、結果文＋URLをクリップボードにコピーする動きになる。つまり、死んではない。珍しくちゃんと働いてる。
+
+貼る場所は、今の tools リポジトリの中に power フォルダを作って、その中に index.html として置く。
+
+構成はこう。
+
+tools/
+├── index.html          ← 神引きシミュレーター
+└── power/
+    └── index.html      ← トレカ戦闘力メーカー
+
+今渡したファイル名は trading-card-power-simple.html だから、GitHubに上げる前に index.html に名前変更しておく。
+
+GitHub上でやるなら、tools リポジトリを開いて、
+
+Add file → Create new file
+
+を押して、ファイル名欄にそのまま
+
+power/index.html
+
+と入力すれば、power フォルダも同時に作れる。そこへHTMLコードを貼ってCommitすればいい。
+
+公開URLは、
+
+https://cmedia-creator.github.io/tools/power/
+
+になる。
+
+神引きシミュレーターは今までどおり、
+
+https://cmedia-creator.github.io/tools/
+
+のまま。完全に別ページとして共存する。
+
+そこなら簡単。今の画面で右側の「＋」ボタンを押して。
+
+メニューが出たら Upload files ではなく、今回は Create new file を選ぶのが分かりやすい。
+
+次の画面でファイル名に、
+
+power/index.html
+
+と入力。
+
+/ を入れることでGitHubが自動的に power フォルダを作ってくれる。
+
+その下の大きな編集欄に、私が作ったHTMLの中身を全部貼り付けて、
+
+Commit changes → Commit changes
+
+で保存。
+
+完成すると今の画面が、
+
+tools
+├── power
+│   └── index.html
+└── index.html
+
+になる。
+
+その後GitHub Pagesが自動更新されて、
+
+トレカ戦闘力メーカー
+
+で公開される。
+
+ただ、ファイルをダウンロード済みならもっと楽。右の「＋」→ Upload files でもいい。その場合は先にPC側で power フォルダを作り、その中へ名前を index.html に変更したファイルを入れて、powerフォルダごとドラッグ＆ドロップすればいい。
+
+今の状況なら後者の方が事故りにくい。GitHubのWeb編集欄に巨大HTMLを貼るという文明的とは言い難い儀式をしなくて済む。
+
+あってる？
+
+合ってる。完璧。
+
+画像を見ると、
+
+tools / power / index.html
+
+になっている。狙いどおり。
+
+あとは中央の
+
+Enter file contents here
+
+を全部消して、私が作ったHTMLコードを丸ごと貼ればいい。
+
+ただし、コードを手でコピーするより、さっきの完成ファイルを使う方が楽。
+
+完成版HTMLをもう一度開く
+
+これを開いて中身を全選択 → コピー → GitHubの編集欄へ貼り付け。
+
+その後、
+
+Commit changes... → Commit changes
+
+で完成。
+
+最終的に公開先は、
+
+https://cmedia-creator.github.io/tools/power/
+
+になる。
+
+今の tools/index.html（神引きシミュレーター）には一切触れてないので、そっちもそのまま残る。GitHubのフォルダ構造、理解すると急に素直になる。最初だけ妙に人間を試してくる。
+
+trading-card-power-simple.html
+HTML
+
+ライブラリ
+/
+trading-card-power-simple.html
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="MONSTAGE トレカ戦闘力メーカー">
+<title>MONSTAGE トレカ戦闘力メーカー</title>
+<style>
+:root{--bg:#0d1016;--panel:#171b24;--panel2:#202632;--line:#313948;--text:#f7f8fb;--muted:#aab2c1;--pink:#ff5c8a;--purple:#8b5cff;--gold:#ffd166}
+*{box-sizing:border-box} body{margin:0;min-height:100vh;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text);background:radial-gradient(circle at 15% 0%,rgba(255,92,138,.18),transparent 28rem),radial-gradient(circle at 90% 10%,rgba(139,92,255,.16),transparent 24rem),var(--bg)}
+.wrap{width:min(100% - 22px,720px);margin:auto;padding:26px 0 48px}.hero{text-align:center}.brand{color:#ff9db8;letter-spacing:.18em;font-size:.82rem;font-weight:900}h1{margin:8px 0;font-size:clamp(2rem,7vw,3.2rem);line-height:1.08}.lead{color:var(--muted);line-height:1.7;margin:0 auto;max-width:600px}
+.card{background:rgba(23,27,36,.96);border:1px solid var(--line);border-radius:22px;padding:20px;margin-top:16px;box-shadow:0 18px 50px rgba(0,0,0,.3)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}label{display:block;color:var(--muted);font-size:.85rem;font-weight:800;margin-bottom:7px}input,select{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:13px 14px;color:var(--text);font-size:1rem}.hint{color:var(--muted);font-size:.73rem;margin-top:5px}
+button{cursor:pointer}.calc{width:100%;border:0;border-radius:16px;padding:16px;margin-top:17px;color:white;font-size:1.05rem;font-weight:900;background:linear-gradient(135deg,var(--pink),var(--purple))}
+.error{display:none;color:#ffabab;font-size:.85rem;font-weight:800;margin-top:10px}
+.result{display:none;text-align:center;background:radial-gradient(circle at top right,rgba(255,209,102,.14),transparent 14rem),linear-gradient(160deg,#191f2a,#11151d)}.result.show{display:block;animation:pop .25s ease-out}@keyframes pop{from{opacity:.4;transform:scale(.98)}to{opacity:1;transform:scale(1)}}
+.rank{color:var(--gold);font-weight:1000;letter-spacing:.1em}.power{font-size:clamp(3.8rem,15vw,6.8rem);font-weight:1000;letter-spacing:-.05em;line-height:1;margin:10px 0 4px}.powerlabel{color:var(--muted);font-size:.78rem;font-weight:800}.title{font-size:1.6rem;font-weight:1000;margin:18px 0 7px}.comment{color:var(--muted);line-height:1.7;margin:auto;max-width:570px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:18px}.stat{background:rgba(255,255,255,.045);border:1px solid var(--line);border-radius:13px;padding:11px 5px}.stat b{display:block}.stat small{color:var(--muted);font-size:.68rem}
+.share{width:100%;border:0;border-radius:14px;padding:14px;margin-top:15px;color:white;font-weight:900;background:#315fe8}.provided{color:#7d8798;font-size:.7rem;letter-spacing:.1em;font-weight:800;margin-top:13px}.note{color:var(--muted);font-size:.78rem;line-height:1.7}footer{text-align:center;color:#727b8d;font-size:.73rem;margin-top:20px}
+@media(max-width:600px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.card{padding:16px;border-radius:18px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<section class="hero">
+<div class="brand">MONSTAGE</div>
+<h1>トレカ戦闘力メーカー</h1>
+<p class="lead">4つの項目から、あなたのトレカ戦闘力を測定します。</p>
+</section>
+
+<section class="card">
+<div class="grid">
+<div><label for="owned">所持トレカ（推定）</label><input id="owned" type="number" min="0" step="1" value="100" inputmode="numeric"><div class="hint">だいたいの枚数でOK</div></div>
+<div><label for="rare">激レアトレカ（推定）</label><input id="rare" type="number" min="0" step="1" value="3" inputmode="numeric"><div class="hint">自分基準の「激レア」でOK</div></div>
+<div><label for="years">トレカ収集歴</label><select id="years"><option value="0">半年未満</option><option value="1">半年〜1年</option><option value="2" selected>1〜2年</option><option value="3">2〜3年</option><option value="4">3〜5年</option><option value="5">5年以上</option></select></div>
+<div><label for="spirit">推しへの執念</label><select id="spirit"><option value="0">わりと冷静</option><option value="1">推しはちゃんと集めたい</option><option value="2" selected>推しは絶対に回収する</option><option value="3">交換・購入を駆使して追う</option><option value="4">出るまで終われない</option></select></div>
+</div>
+<div id="error" class="error"></div>
+<button id="calc" class="calc">戦闘力を測定する</button>
+</section>
+
+<section id="result" class="card result">
+<div id="rank" class="rank"></div>
+<div id="power" class="power"></div>
+<div class="powerlabel">TRADING CARD POWER</div>
+<div id="title" class="title"></div>
+<p id="comment" class="comment"></p>
+<div class="stats">
+<div class="stat"><b id="sOwned"></b><small>所持トレカ</small></div>
+<div class="stat"><b id="sRare"></b><small>激レア</small></div>
+<div class="stat"><b id="sYears"></b><small>収集歴</small></div>
+<div class="stat"><b id="sSpirit"></b><small>推しへの執念</small></div>
+</div>
+<button id="share" class="share">結果を共有</button>
+<div class="provided">MONSTAGE提供</div>
+</section>
+
+<section class="card"><div class="note"><strong>この診断について</strong><br>戦闘力はMONSTAGE独自の遊び用スコアです。市場価値やトレカの優劣を示すものではありません。</div></section>
+<footer>MONSTAGE Mini Tools</footer>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+const yearLabels=["半年未満","半年〜1年","1〜2年","2〜3年","3〜5年","5年以上"];
+const spiritLabels=["わりと冷静","推しはちゃんと集めたい","推しは絶対に回収する","交換・購入を駆使して追う","出るまで終われない"];
+let shareText="";
+
+function classification(p){
+ if(p<1500)return["RANK C","トレカ村の新戦士","まだ伸びしろだらけ。財布も比較的平和な時代です。"];
+ if(p<3000)return["RANK B","推し回収部隊","着実に戦力増強中。収納用品が気になり始める頃です。"];
+ if(p<5000)return["RANK A","トレカ熟練兵","十分な戦力。普通の人には枚数を言わないほうが平和かもしれません。"];
+ if(p<7500)return["RANK S","トレカ戦闘民族","かなりの高戦闘力。ランダム封入の文字を見ると身体が反応します。"];
+ if(p<10000)return["RANK SS","推し回収の覇者","推しを逃さない強い意志と物量を兼ね備えています。"];
+ return["RANK MONSTER","トレカ界の最終形態","測定器のほうが心配になる領域。もはやコレクションではなく歴史です。"];
+}
+
+$("calc").onclick=()=>{
+ const owned=Number($("owned").value),rare=Number($("rare").value),years=Number($("years").value),spirit=Number($("spirit").value);
+ if(!Number.isInteger(owned)||owned<0||!Number.isInteger(rare)||rare<0||rare>owned){
+   $("error").textContent=rare>owned?"激レア枚数は所持枚数以下にしてください。":"枚数は0以上の整数で入力してください。";
+   $("error").style.display="block"; $("result").classList.remove("show"); return;
+ }
+ $("error").style.display="none";
+
+ // 所持数だけで無限に暴走しないよう平方根を使用。レア・歴・執念をしっかり加点。
+ const power=Math.round(Math.sqrt(owned)*300 + Math.sqrt(rare)*550 + years*500 + spirit*650);
+ const [rank,title,comment]=classification(power);
+
+ $("rank").textContent=rank;$("power").textContent=power.toLocaleString("ja-JP");$("title").textContent=title;$("comment").textContent=comment;
+ $("sOwned").textContent=owned.toLocaleString("ja-JP")+"枚";$("sRare").textContent=rare.toLocaleString("ja-JP")+"枚";$("sYears").textContent=yearLabels[years];$("sSpirit").textContent=spiritLabels[spirit];
+ shareText=`MONSTAGE トレカ戦闘力メーカー\n\n戦闘力：${power.toLocaleString("ja-JP")}\n${rank}\n称号：${title}\n\nあなたのトレカ戦闘力は？\n#MONSTAGE #トレカ戦闘力`;
+ $("result").classList.add("show");$("result").scrollIntoView({behavior:"smooth",block:"start"});
+};
+
+$("share").onclick=async()=>{
+ if(!shareText)return;
+ if(navigator.share){try{await navigator.share({title:"MONSTAGE トレカ戦闘力メーカー",text:shareText,url:location.href})}catch(e){}}
+ else{await navigator.clipboard.writeText(shareText+"\n"+location.href);$("share").textContent="コピーしました";setTimeout(()=>$("share").textContent="結果を共有",1300)}
+};
+</script>
+</body>
+</html>
