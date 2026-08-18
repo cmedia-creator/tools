@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="MONSTAGE トレカ神引きシミュレーター。欲しいカードを引ける確率と必要購入枚数をかんたん計算。" />
+  <title>MONSTAGE トレカ神引きシミュレーター</title>
+  <style>
+    :root {
+      --bg: #0f1115;
+      --panel: #171a21;
+      --panel-2: #20242d;
+      --text: #f6f7fb;
+      --muted: #a9afbd;
+      --accent: #ff5c8a;
+      --accent-2: #ff8aad;
+      --success: #64d98b;
+      --danger: #ff7a7a;
+      --border: #303542;
+      --shadow: 0 18px 45px rgba(0,0,0,.28);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top, rgba(255,92,138,.13), transparent 34rem),
+        var(--bg);
+      color: var(--text);
+    }
+
+    .wrap {
+      width: min(100% - 24px, 760px);
+      margin: 0 auto;
+      padding: 28px 0 48px;
+    }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 18px;
+    }
+
+    .brand {
+      font-size: .82rem;
+      letter-spacing: .18em;
+      color: var(--accent-2);
+      font-weight: 800;
+    }
+
+    h1 {
+      margin: 8px 0 8px;
+      font-size: clamp(1.9rem, 6vw, 3rem);
+      line-height: 1.1;
+    }
+
+    .lead {
+      margin: 0 auto;
+      max-width: 620px;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: .96rem;
+    }
+
+    .card {
+      background: rgba(23, 26, 33, .96);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+      margin-top: 16px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    label {
+      display: block;
+      color: var(--muted);
+      font-size: .85rem;
+      margin-bottom: 7px;
+      font-weight: 700;
+    }
+
+    input {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 13px 14px;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(255,92,138,.13);
+    }
+
+    .main-result {
+      text-align: center;
+      padding: 8px 0 4px;
+    }
+
+    .main-result .caption {
+      color: var(--muted);
+      font-size: .9rem;
+      margin-bottom: 4px;
+    }
+
+    .probability {
+      font-size: clamp(3rem, 12vw, 5.6rem);
+      font-weight: 900;
+      letter-spacing: -.04em;
+      line-height: 1;
+    }
+
+    .probability span {
+      font-size: .45em;
+      margin-left: 4px;
+    }
+
+    .sub {
+      color: var(--muted);
+      font-size: .9rem;
+      margin-top: 9px;
+    }
+
+    .targets {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 9px;
+      margin-top: 16px;
+    }
+
+    .target {
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      border-radius: 14px;
+      padding: 12px 8px;
+      text-align: center;
+    }
+
+    .target strong {
+      display: block;
+      font-size: .95rem;
+      margin-bottom: 6px;
+    }
+
+    .target .count {
+      font-size: 1.25rem;
+      font-weight: 900;
+    }
+
+    .target small {
+      display: block;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .slowdown {
+      margin-top: 14px;
+      border-radius: 14px;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      padding: 14px;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+
+    .slowdown strong { color: var(--text); }
+
+    .challenge {
+      margin-top: 14px;
+      width: 100%;
+      border: 0;
+      border-radius: 16px;
+      padding: 16px 18px;
+      font-size: 1.05rem;
+      font-weight: 900;
+      cursor: pointer;
+      color: white;
+      background: linear-gradient(135deg, var(--accent), #c44cff);
+      box-shadow: 0 10px 28px rgba(255,92,138,.22);
+      transition: transform .14s ease, filter .14s ease;
+    }
+
+    .challenge:active { transform: scale(.985); }
+    .challenge:hover { filter: brightness(1.07); }
+
+    .game-result {
+      display: none;
+      margin-top: 14px;
+      padding: 18px;
+      border-radius: 16px;
+      text-align: center;
+      font-weight: 900;
+      font-size: 1.3rem;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+    }
+
+    .game-result.win {
+      display: block;
+      color: var(--success);
+      animation: pop .28s ease-out;
+    }
+
+    .game-result.lose {
+      display: block;
+      color: var(--danger);
+      animation: pop .28s ease-out;
+    }
+
+    @keyframes pop {
+      from { transform: scale(.94); opacity: .45; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .provided {
+      margin-top: 7px;
+      font-size: .72rem;
+      letter-spacing: .08em;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .notes {
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: .78rem;
+      line-height: 1.7;
+    }
+
+    .error {
+      display: none;
+      margin-top: 10px;
+      color: #ffaaaa;
+      font-size: .86rem;
+      font-weight: 700;
+    }
+
+    footer {
+      text-align: center;
+      color: #72798a;
+      margin-top: 22px;
+      font-size: .75rem;
+    }
+
+    @media (max-width: 620px) {
+      .wrap { width: min(100% - 18px, 760px); padding-top: 20px; }
+      .card { padding: 16px; border-radius: 18px; }
+      .grid { grid-template-columns: 1fr; }
+      .targets { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <div class="brand">MONSTAGE</div>
+      <h1>トレカ神引きシミュレーター</h1>
+      <p class="lead">
+        欲しいカードを1枚以上引ける確率を計算。何枚買えば50%・80%・90%・95%を超えるかも表示します。
+      </p>
+    </section>
+
+    <section class="card">
+      <div class="grid">
+        <div>
+          <label for="total">総種類数</label>
+          <input id="total" type="number" min="1" step="1" value="40" inputmode="numeric" />
+        </div>
+
+        <div>
+          <label for="wanted">欲しいカード種類数</label>
+          <input id="wanted" type="number" min="1" step="1" value="1" inputmode="numeric" />
+        </div>
+
+        <div>
+          <label for="price">1パック価格（円）</label>
+          <input id="price" type="number" min="0" step="1" value="600" inputmode="numeric" />
+        </div>
+
+        <div>
+          <label for="packs">購入枚数</label>
+          <input id="packs" type="number" min="1" step="1" value="10" inputmode="numeric" />
+        </div>
+      </div>
+
+      <div id="error" class="error"></div>
+    </section>
+
+    <section class="card">
+      <div class="main-result">
+        <div class="caption">欲しいカードを1枚以上引ける確率</div>
+        <div class="probability" id="probability">0.0<span>%</span></div>
+        <div class="sub" id="spend">購入金額：0円</div>
+      </div>
+
+      <div class="targets">
+        <div class="target">
+          <strong>50%超</strong>
+          <div class="count" id="n50">-</div>
+          <small id="c50">-</small>
+        </div>
+        <div class="target">
+          <strong>80%超</strong>
+          <div class="count" id="n80">-</div>
+          <small id="c80">-</small>
+        </div>
+        <div class="target">
+          <strong>90%超</strong>
+          <div class="count" id="n90">-</div>
+          <small id="c90">-</small>
+        </div>
+        <div class="target">
+          <strong>95%超</strong>
+          <div class="count" id="n95">-</div>
+          <small id="c95">-</small>
+        </div>
+      </div>
+
+      <div class="slowdown" id="slowdown">
+        <strong>伸びが鈍る目安：</strong> -
+      </div>
+
+      <button class="challenge" id="challenge" type="button">
+        この確率に挑む
+      </button>
+
+      <div id="gameResult" class="game-result">
+        <div id="gameText"></div>
+        <div class="provided">MONSTAGE提供</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="notes">
+        <strong>計算上の前提</strong><br>
+        各カードが等確率で、1回ごとの抽選が独立しているものとして計算しています。
+        実際の商品では封入率、レアリティ、BOX内の配列・重複制限などにより実際の確率と異なる場合があります。
+        このツールは購入結果を保証するものではありません。
+      </div>
+    </section>
+
+    <footer>MONSTAGE Mini Tools</footer>
+  </main>
+
+  <script>
+    const els = {
+      total: document.getElementById("total"),
+      wanted: document.getElementById("wanted"),
+      price: document.getElementById("price"),
+      packs: document.getElementById("packs"),
+      probability: document.getElementById("probability"),
+      spend: document.getElementById("spend"),
+      slowdown: document.getElementById("slowdown"),
+      error: document.getElementById("error"),
+      challenge: document.getElementById("challenge"),
+      gameResult: document.getElementById("gameResult"),
+      gameText: document.getElementById("gameText"),
+    };
+
+    const thresholds = [
+      { p: 0.50, n: "n50", c: "c50" },
+      { p: 0.80, n: "n80", c: "c80" },
+      { p: 0.90, n: "n90", c: "c90" },
+      { p: 0.95, n: "n95", c: "c95" },
+    ];
+
+    let currentProbability = 0;
+
+    function yen(value) {
+      return new Intl.NumberFormat("ja-JP", {
+        style: "currency",
+        currency: "JPY",
+        maximumFractionDigits: 0
+      }).format(value);
+    }
+
+    function probabilityAtLeastOne(hitRate, n) {
+      return 1 - Math.pow(1 - hitRate, n);
+    }
+
+    function requiredCount(hitRate, target) {
+      if (hitRate >= 1) return 1;
+      return Math.ceil(Math.log(1 - target) / Math.log(1 - hitRate));
+    }
+
+    function getSlowdownPoint(hitRate) {
+      // 「1枚追加したときの当選確率上昇」が1 percentage point未満になる最初の購入枚数。
+      // P(n+1)-P(n)=hitRate*(1-hitRate)^n
+      if (hitRate >= 1) return 1;
+      if (hitRate < 0.01) return 0;
+
+      const n = Math.ceil(
+        Math.log(0.01 / hitRate) / Math.log(1 - hitRate)
+      );
+
+      return Math.max(0, n);
+    }
+
+    function validate(total, wanted, price, packs) {
+      if (![total, wanted, price, packs].every(Number.isFinite)) {
+        return "すべての項目に数字を入力してください。";
+      }
+      if (total < 1 || !Number.isInteger(total)) {
+        return "総種類数は1以上の整数にしてください。";
+      }
+      if (wanted < 1 || !Number.isInteger(wanted)) {
+        return "欲しいカード種類数は1以上の整数にしてください。";
+      }
+      if (wanted > total) {
+        return "欲しいカード種類数は総種類数以下にしてください。";
+      }
+      if (price < 0) {
+        return "価格は0円以上にしてください。";
+      }
+      if (packs < 1 || !Number.isInteger(packs)) {
+        return "購入枚数は1以上の整数にしてください。";
+      }
+      return "";
+    }
+
+    function render() {
+      const total = Number(els.total.value);
+      const wanted = Number(els.wanted.value);
+      const price = Number(els.price.value);
+      const packs = Number(els.packs.value);
+
+      const error = validate(total, wanted, price, packs);
+
+      if (error) {
+        els.error.textContent = error;
+        els.error.style.display = "block";
+        currentProbability = 0;
+        return;
+      }
+
+      els.error.style.display = "none";
+
+      const hitRate = wanted / total;
+      const p = probabilityAtLeastOne(hitRate, packs);
+      currentProbability = p;
+
+      els.probability.innerHTML =
+        `${(p * 100).toFixed(1)}<span>%</span>`;
+
+      els.spend.textContent =
+        `購入金額：${yen(price * packs)}`;
+
+      thresholds.forEach(t => {
+        const count = requiredCount(hitRate, t.p);
+        document.getElementById(t.n).textContent = `${count}枚`;
+        document.getElementById(t.c).textContent = yen(count * price);
+      });
+
+      const slowdownN = getSlowdownPoint(hitRate);
+
+      if (slowdownN === 0) {
+        els.slowdown.innerHTML =
+          `<strong>伸びが鈍る目安：</strong> 最初から1枚追加による上昇幅が1ポイント未満です。`;
+      } else {
+        const before = probabilityAtLeastOne(hitRate, slowdownN);
+        const after = probabilityAtLeastOne(hitRate, slowdownN + 1);
+        const gain = (after - before) * 100;
+
+        els.slowdown.innerHTML =
+          `<strong>伸びが鈍る目安：</strong> ${slowdownN}枚購入時点から、` +
+          `さらに1枚追加しても当選確率の上昇が約${gain.toFixed(2)}ポイントになります。`;
+      }
+
+      els.gameResult.className = "game-result";
+      els.gameText.textContent = "";
+    }
+
+    [els.total, els.wanted, els.price, els.packs].forEach(el => {
+      el.addEventListener("input", render);
+    });
+
+    els.challenge.addEventListener("click", () => {
+      render();
+
+      if (els.error.style.display === "block") return;
+
+      const win = Math.random() < currentProbability;
+
+      els.gameResult.className = `game-result ${win ? "win" : "lose"}`;
+      els.gameText.textContent = win
+        ? "🎉 神引き！"
+        : "今回は、はずれ。";
+    });
+
+    render();
+  </script>
+</body>
+</html>
