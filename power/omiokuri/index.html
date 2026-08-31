@@ -6,27 +6,27 @@
 <meta name="theme-color" content="#0b0b0b">
 <title>MONSTAGE 抽選券シミュレーション</title>
 <style>
-:root{--yellow:#eeef68;--yellow2:#e6e75b;--olive:#737844;--ink:#111}
+:root{--yellow:#efef68;--yellow2:#e6e75b;--olive:#727744;--ink:#111}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;background:radial-gradient(circle at 50% 20%,rgba(255,255,255,.055),transparent 32%),linear-gradient(180deg,#1b1b1b,#0b0b0b);color:#fff}
-body{min-height:100dvh;overflow:hidden}
-button,input{font:inherit}
+body{min-height:100dvh;overflow:hidden}button,input{font:inherit}
 .app{min-height:100dvh;width:min(100%,520px);margin:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:max(24px,env(safe-area-inset-top)) 14px max(28px,env(safe-area-inset-bottom))}
 .screen{display:none;width:100%;flex:1;flex-direction:column;align-items:center;justify-content:center}.screen.active{display:flex}
 .title{margin:0 0 6px;font-size:20px;letter-spacing:.08em;font-weight:800}.subtitle{margin:0 0 18px;color:#aaa;font-size:12px;text-align:center}.brand{font-size:10px;letter-spacing:.18em;color:#666;margin-bottom:14px}
 .panel{width:min(92vw,420px);padding:22px;background:rgba(255,255,255,.035);border:1px solid #2b2b2b;border-radius:18px;box-shadow:0 18px 42px rgba(0,0,0,.28)}
 .question{text-align:center;font-size:16px;font-weight:900;margin-bottom:16px}.qtyrow{display:grid;grid-template-columns:48px 1fr 48px;gap:10px}.step,.quick button,.secondary{border:1px solid #383838;background:#202020;color:#fff;border-radius:14px;cursor:pointer}.step{height:50px;font-size:24px}.qty{height:50px;border:1px solid #444;border-radius:14px;background:#111;color:#fff;text-align:center;font-size:22px;font-weight:900}.quick{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px}.quick button{padding:8px 12px;font-size:12px;font-weight:800}.primary{width:100%;margin-top:18px;border:0;border-radius:14px;padding:15px;background:var(--yellow);color:#111;font-weight:1000;cursor:pointer}.note{margin-top:12px;color:#666;font-size:10px;text-align:center;line-height:1.6}
 .stage{position:relative;width:min(96vw,520px);height:390px;perspective:1200px}
-.stack-card{position:absolute;left:50%;top:50%;width:min(88vw,430px);aspect-ratio:91/55;border-radius:2px;background:repeating-linear-gradient(-38deg,transparent 0 18px,rgba(95,100,52,.08) 18px 20px),var(--yellow2);box-shadow:0 12px 26px rgba(0,0,0,.24)}.stack-card.one{transform:translate(-50%,-44%) rotate(.7deg);opacity:.72}.stack-card.two{transform:translate(-50%,-39%) rotate(-.8deg);opacity:.45}
-.card-shell{position:absolute;left:50%;top:50%;width:min(88vw,430px);aspect-ratio:91/55;transform:translate(-50%,-50%);transform-style:preserve-3d;z-index:20;cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:manipulation}.card-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden;border-radius:2px;box-shadow:0 2px 3px rgba(0,0,0,.16),0 15px 30px rgba(0,0,0,.28)}
-.card-back{background:repeating-linear-gradient(0deg,rgba(70,70,20,.018) 0 1px,transparent 1px 3px),linear-gradient(105deg,rgba(255,255,255,.14),transparent 32%),var(--yellow);display:flex;align-items:center;justify-content:center;overflow:hidden}.back-pattern{position:absolute;width:150%;height:180%;left:-25%;top:-40%;display:grid;grid-template-columns:repeat(8,1fr);grid-auto-rows:22px;gap:1px 12px;align-content:center;transform:rotate(-38deg);transform-origin:center}.back-pattern span{font-size:10px;font-weight:600;letter-spacing:.05em;white-space:nowrap;color:rgba(91,96,48,.30)}
-.card-front{transform:rotateY(180deg);background:repeating-linear-gradient(0deg,rgba(70,70,20,.018) 0 1px,transparent 1px 3px),repeating-linear-gradient(90deg,rgba(70,70,20,.012) 0 1px,transparent 1px 4px),linear-gradient(105deg,rgba(255,255,255,.16),transparent 34%),var(--yellow);color:var(--ink)}.front-topband{height:14%;margin-top:4.8%;background:var(--olive);color:#edef72;display:flex;align-items:center;justify-content:center;font-size:clamp(11px,3.2vw,18px);font-weight:900;letter-spacing:.04em}.headline{height:23%;display:flex;align-items:center;justify-content:center;gap:5%;padding:0 4%;text-align:center;font-weight:900;line-height:1}.headline .event-name{font-size:clamp(18px,5.1vw,30px);white-space:nowrap}.headline .result-name{font-size:clamp(23px,6.6vw,40px);white-space:nowrap;letter-spacing:-.04em}.dateband{height:11%;margin:0;background:var(--olive);color:#edef72;display:flex;align-items:center;padding:0 4.8%;font-size:clamp(8px,2.25vw,13px);font-weight:900;white-space:nowrap;overflow:hidden}.front-body{height:47%;display:grid;grid-template-columns:1fr 25%;gap:2.5%;padding:2.3% 4.8% 3%}.notes{font-size:clamp(6px,1.58vw,9.5px);line-height:1.33;font-weight:700;overflow:hidden}.serialbox{border:2px solid rgba(25,25,15,.76);display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}.serial-title{font-size:clamp(9px,2.3vw,14px);font-weight:900;margin-bottom:10%}.serial-number{font-size:clamp(31px,9.5vw,58px);font-weight:900;line-height:1}.bm{position:absolute;right:4.8%;bottom:3.8%;font-size:clamp(17px,5.4vw,32px);font-weight:500;transform:rotate(-9deg)}
-.sorry-front .front-topband{margin-top:5%;height:13%}.sorry-main{position:relative;height:82%}.sorry-word{position:absolute;top:10%;left:0;right:0;text-align:center;font-size:clamp(38px,11vw,68px);font-weight:800;letter-spacing:-.03em}.sorry-notes{position:absolute;left:6%;right:29%;bottom:12%;font-size:clamp(8px,2vw,12px);line-height:1.6;font-weight:800}.blank-box{position:absolute;right:5%;top:31%;width:21%;height:42%;border:2px solid rgba(25,25,15,.72)}
-.card-shell.is-flipped{animation:flipToFront .62s cubic-bezier(.2,.7,.2,1) forwards}@keyframes flipToFront{0%{transform:translate(-50%,-50%) rotateY(0deg) rotateZ(0deg)}48%{transform:translate(-50%,-54%) rotateY(88deg) rotateZ(-1deg) scale(1.025)}100%{transform:translate(-50%,-50%) rotateY(180deg) rotateZ(0deg)}}
-.card-shell.to-bottom{animation:moveToBottom .72s cubic-bezier(.22,.72,.2,1) forwards}@keyframes moveToBottom{0%{transform:translate(-50%,-50%) rotateY(180deg) scale(1);opacity:1}35%{transform:translate(-50%,-72%) rotateY(180deg) rotateZ(-4deg) scale(.99);opacity:1}70%{transform:translate(-50%,-34%) rotateY(180deg) rotateZ(2deg) scale(.96);opacity:.7}100%{transform:translate(-50%,-31%) rotateY(180deg) scale(.93);opacity:0}}
-.card-shell.new-card{animation:newCardIn .35s ease-out both}@keyframes newCardIn{from{transform:translate(-50%,-43%) rotateY(0deg) scale(.975);opacity:.45}to{transform:translate(-50%,-50%) rotateY(0deg) scale(1);opacity:1}}
+.stack-card{position:absolute;left:50%;top:50%;width:min(88vw,430px);aspect-ratio:91/55;border-radius:2px;background:var(--yellow2);box-shadow:0 12px 26px rgba(0,0,0,.24);overflow:hidden}.stack-card::after{content:"MONSTAGE   MONSTAGE   MONSTAGE   MONSTAGE   MONSTAGE   MONSTAGE   MONSTAGE   MONSTAGE";position:absolute;inset:-50%;color:rgba(91,96,48,.14);font-size:10px;line-height:24px;letter-spacing:3px;transform:rotate(-38deg)}.stack-card.one{transform:translate(-50%,-44%) rotate(.5deg);opacity:.7}.stack-card.two{transform:translate(-50%,-39%) rotate(-.7deg);opacity:.4}
+.card-shell{position:absolute;left:50%;top:50%;width:min(88vw,430px);aspect-ratio:91/55;transform:translate(-50%,-50%);transform-style:preserve-3d;z-index:20;cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:manipulation}.card-face{position:absolute;inset:0;border-radius:2px;overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:0 3px 4px rgba(0,0,0,.18),0 15px 28px rgba(0,0,0,.25)}
+.card-back{background:repeating-linear-gradient(0deg,rgba(80,80,30,.018) 0 1px,transparent 1px 3px),linear-gradient(105deg,rgba(255,255,255,.12),transparent 35%),var(--yellow);overflow:hidden}.back-pattern{position:absolute;width:160%;height:190%;left:-30%;top:-45%;display:grid;grid-template-columns:repeat(9,1fr);grid-auto-rows:23px;align-content:center;gap:0 10px;transform:rotate(-38deg)}.back-pattern span{color:rgba(91,96,48,.28);font-size:10px;font-weight:700;letter-spacing:.03em;white-space:nowrap}
+.card-front{transform:rotateY(180deg);background:repeating-linear-gradient(0deg,rgba(80,80,30,.018) 0 1px,transparent 1px 3px),linear-gradient(105deg,rgba(255,255,255,.12),transparent 35%),var(--yellow);color:var(--ink)}
+.winner{width:100%;height:100%;position:relative}.winner-top{position:absolute;top:5%;left:0;width:100%;height:14%;background:var(--olive);color:#efef75;display:flex;justify-content:center;align-items:center;font-size:clamp(12px,3.3vw,17px);font-weight:900}.winner-title{position:absolute;top:21%;left:3%;width:94%;height:19%;display:grid;grid-template-columns:42% 58%;align-items:center;text-align:center;font-weight:900;line-height:1}.event{font-size:clamp(17px,4.9vw,27px);white-space:nowrap}.event.rehearsal{font-size:clamp(15px,4.35vw,24px)}.result{font-size:clamp(21px,6vw,35px);white-space:nowrap}.date{position:absolute;top:40%;left:0;width:100%;height:11%;background:var(--olive);color:#efef75;display:flex;align-items:center;padding:0 4%;font-size:clamp(7px,2.15vw,12px);font-weight:900;white-space:nowrap;overflow:hidden}.winner-bottom{position:absolute;top:53%;left:4%;width:92%;height:42%}.notes{position:absolute;left:0;top:0;width:72%;height:100%;overflow:hidden;font-size:clamp(5.5px,1.48vw,8.5px);line-height:1.32;font-weight:700}.serial{position:absolute;right:0;top:0;width:24%;height:78%;border:2px solid rgba(25,25,15,.75);display:flex;flex-direction:column;align-items:center;justify-content:center}.serial-label{font-size:clamp(9px,2.3vw,13px);font-weight:900;margin-bottom:10%}.serial-number{font-size:clamp(30px,9vw,52px);font-weight:900;line-height:1}.bm{position:absolute;right:1%;bottom:0;font-size:clamp(17px,5vw,28px);font-weight:600;transform:rotate(-8deg)}
+.sorry{width:100%;height:100%;position:relative}.sorry-top{position:absolute;top:8%;left:0;width:100%;height:14%;background:var(--olive);color:#efef75;display:flex;align-items:center;justify-content:center;font-size:clamp(12px,3.2vw,17px);font-weight:900}.sorry-word{position:absolute;top:27%;left:0;width:100%;text-align:center;font-size:clamp(40px,12vw,68px);line-height:1;font-weight:800}.sorry-box{position:absolute;right:5%;top:48%;width:20%;height:39%;border:2px solid rgba(25,25,15,.72)}.sorry-text{position:absolute;left:6%;bottom:8%;width:64%;font-size:clamp(7px,1.9vw,11px);font-weight:800;line-height:1.65}
+.card-shell.flipped{animation:flipCard .6s cubic-bezier(.2,.75,.2,1) forwards}@keyframes flipCard{0%{transform:translate(-50%,-50%) rotateY(0deg)}48%{transform:translate(-50%,-54%) rotateY(90deg) scale(1.02)}100%{transform:translate(-50%,-50%) rotateY(180deg)}}
+.card-shell.bottom{animation:bottomCard .7s cubic-bezier(.2,.72,.2,1) forwards}@keyframes bottomCard{0%{transform:translate(-50%,-50%) rotateY(180deg);opacity:1}35%{transform:translate(-50%,-72%) rotateY(180deg) rotateZ(-4deg)}70%{transform:translate(-50%,-34%) rotateY(180deg) rotateZ(2deg) scale(.96);opacity:.7}100%{transform:translate(-50%,-30%) rotateY(180deg) scale(.93);opacity:0}}
+.card-shell.new{animation:newCard .32s ease-out both}@keyframes newCard{from{transform:translate(-50%,-42%) rotateY(0deg) scale(.97);opacity:.4}to{transform:translate(-50%,-50%) rotateY(0deg) scale(1);opacity:1}}
 .instruction{margin-top:4px;text-align:center;color:#aaa;font-size:12px;line-height:1.7}.counter{position:fixed;left:0;right:0;bottom:16px;text-align:center;color:#666;font-size:11px;letter-spacing:.11em}.result-card{width:min(92vw,430px);padding:22px;background:#171717;border:1px solid #303030;border-radius:20px}.stat{display:flex;justify-content:space-between;padding:13px 0;border-bottom:1px solid #2b2b2b;font-weight:800}.stat:last-child{border-bottom:0}.buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}.secondary{padding:13px 10px;font-weight:900}
-@media(max-height:720px){.stage{height:330px}.subtitle{margin-bottom:8px}.counter{bottom:6px}}
+@media(max-height:720px){.stage{height:320px}.subtitle{margin-bottom:10px}.counter{bottom:6px}}
 </style>
 </head>
 <body>
@@ -44,45 +44,56 @@ button,input{font:inherit}
   </div>
 </section>
 <section id="drawScreen" class="screen">
-  <h1 class="title">MONSTAGE 抽選券</h1><p class="subtitle">カードをタップして抽選</p>
-  <section class="stage"><div class="stack-card two"></div><div class="stack-card one"></div>
+  <h1 class="title">MONSTAGE 抽選券</h1>
+  <p class="subtitle">カードをタップして抽選</p>
+  <section class="stage">
+    <div class="stack-card two"></div><div class="stack-card one"></div>
     <div class="card-shell" id="cardShell" tabindex="0" role="button" aria-label="抽選券をめくる">
-      <div class="card-face card-back"><div class="back-pattern" aria-hidden="true" id="backPattern"></div></div>
+      <div class="card-face card-back"><div class="back-pattern" id="backPattern" aria-hidden="true"></div></div>
       <div class="card-face card-front" id="frontFace"></div>
     </div>
   </section>
-  <div class="instruction" id="instruction">1回目のタップで結果を確認</div>
+  <div class="instruction" id="instruction">1回タップ：表面をめくる</div>
   <div class="counter" id="counter">1 / 10 枚目</div>
 </section>
 <section id="resultScreen" class="screen">
-  <h1 class="title">RESULT</h1><p class="subtitle">今回の抽選結果</p>
+  <h1 class="title">RESULT</h1>
+  <p class="subtitle">今回の抽選結果</p>
   <div class="result-card">
     <div class="stat"><span>挑戦</span><strong><span id="statTotal">0</span>枚</strong></div>
     <div class="stat"><span>公開リハーサル</span><strong><span id="statRehearsal">0</span>枚</strong></div>
     <div class="stat"><span>お見送り会</span><strong><span id="statSendoff">0</span>枚</strong></div>
-    <div class="stat"><span>sorry</span><strong><span id="statSorry">0</span>枚</strong></div>
+    <div class="stat"><span>Sorry</span><strong><span id="statSorry">0</span>枚</strong></div>
     <div class="buttons"><button class="secondary" id="retryBtn">もう一度</button><button class="secondary" id="shareBtn">結果をシェア</button></div>
   </div>
 </section>
 </main>
 <script>
-const PROBABILITY={sendoff:.01,rehearsal:.05,sorry:.94};
+const PROBABILITY={sendoff:.02,rehearsal:.15,sorry:.83};
 const $=id=>document.getElementById(id);
-const startScreen=$('startScreen'),drawScreen=$('drawScreen'),resultScreen=$('resultScreen'),cardShell=$('cardShell');
-let total=10,current=1,state='back',busy=false,counts={sorry:0,rehearsal:0,sendoff:0};
-$('backPattern').innerHTML=Array.from({length:64},()=>'<span>MONSTAGE</span>').join('');
+const startScreen=$('startScreen'),drawScreen=$('drawScreen'),resultScreen=$('resultScreen'),cardShell=$('cardShell'),frontFace=$('frontFace');
+let total=10,current=1,state='back',busy=false,currentResult=null,counts={sorry:0,rehearsal:0,sendoff:0};
+$('backPattern').innerHTML=Array.from({length:100},()=>'<span>MONSTAGE</span>').join('');
 function show(screen){[startScreen,drawScreen,resultScreen].forEach(s=>s.classList.remove('active'));screen.classList.add('active')}
 function clamp(v){let n=parseInt(v||1,10);return Math.min(100,Math.max(1,Number.isNaN(n)?1:n))}
-$('minusBtn').onclick=()=>$('qtyInput').value=clamp(+$('qtyInput').value-1);$('plusBtn').onclick=()=>$('qtyInput').value=clamp(+$('qtyInput').value+1);document.querySelectorAll('[data-qty]').forEach(b=>b.onclick=()=>$('qtyInput').value=b.dataset.qty);
+$('minusBtn').onclick=()=>$('qtyInput').value=clamp(+$('qtyInput').value-1);
+$('plusBtn').onclick=()=>$('qtyInput').value=clamp(+$('qtyInput').value+1);
+document.querySelectorAll('[data-qty]').forEach(b=>b.onclick=()=>$('qtyInput').value=b.dataset.qty);
 function dateText(){const d=new Date(),w=['日','月','火','水','木','金','土'];return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日（${w[d.getDay()]}）`}
-function drawOne(){const r=Math.random();if(r<PROBABILITY.sendoff)return{type:'sendoff',event:'お見送り会'};if(r<PROBABILITY.sendoff+PROBABILITY.rehearsal)return{type:'rehearsal',event:'公開リハーサル'};return{type:'sorry'}}
-function buildFront(result){if(result.type==='sorry'){return `<div class="sorry-front"><div class="front-topband">抽選結果</div><div class="sorry-main"><div class="sorry-word">sorry</div><div class="sorry-notes">残念ながら今回はハズレです。<br>次の抽選券をめくってください。</div><div class="blank-box"></div></div></div>`}const serial=Math.floor(Math.random()*300)+1;return `<div class="front-topband">${result.event} 抽選券</div><div class="headline"><span class="event-name">${result.event}</span><span class="result-name">アタリ</span></div><div class="dateband">集合日時：${dateText()}　指定時間までに会場へご集合ください。</div><div class="front-body"><div class="notes">●記載の整理番号順にご参加いただけます。<br>●本券は参加時に回収いたします。<br>●紛失・盗難時の再発行はいたしません。<br>●本券は当日のみ有効です。<br>●係員の指示に従ってご参加ください。</div><div class="serialbox"><div class="serial-title">整理番号</div><div class="serial-number">${serial}</div></div></div><div class="bm">BM</div>`}
-function resetCard(){busy=false;state='back';cardShell.className='card-shell';$('frontFace').innerHTML='';$('instruction').textContent='1回目のタップで結果を確認';$('counter').textContent=`${current} / ${total} 枚目`}
-function tapCard(){if(busy)return;if(state==='back'){busy=true;const result=drawOne();counts[result.type]++;$('frontFace').innerHTML=buildFront(result);cardShell.classList.add('is-flipped');state='front';if(navigator.vibrate)navigator.vibrate(result.type==='sendoff'?[70,50,120]:result.type==='rehearsal'?70:25);setTimeout(()=>{busy=false;$('instruction').textContent='もう一度タップで次の抽選券へ'},650)}else if(state==='front'){busy=true;cardShell.classList.remove('is-flipped');cardShell.classList.add('to-bottom');setTimeout(()=>{if(current>=total){showResult();return}current++;cardShell.className='card-shell new-card';$('frontFace').innerHTML='';$('counter').textContent=`${current} / ${total} 枚目`;$('instruction').textContent='1回目のタップで結果を確認';state='back';setTimeout(()=>{cardShell.className='card-shell';busy=false},360)},720)}}
-cardShell.onclick=tapCard;cardShell.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();tapCard()}};
-$('startBtn').onclick=()=>{total=clamp($('qtyInput').value);current=1;counts={sorry:0,rehearsal:0,sendoff:0};resetCard();show(drawScreen)};
-function showResult(){$('statTotal').textContent=total;$('statRehearsal').textContent=counts.rehearsal;$('statSendoff').textContent=counts.sendoff;$('statSorry').textContent=counts.sorry;show(resultScreen);busy=false}
-$('retryBtn').onclick=()=>show(startScreen);$('shareBtn').onclick=async()=>{const text=`MONSTAGE 抽選券シミュレーション\n🎫 ${total}枚挑戦\n🎥 公開リハーサル：${counts.rehearsal}枚\n👋 お見送り会：${counts.sendoff}枚\n🥲 sorry：${counts.sorry}枚\n\n#MONSTAGE`;try{if(navigator.share){await navigator.share({title:'MONSTAGE 抽選券シミュレーション',text,url:location.href})}else{await navigator.clipboard.writeText(text+'\n'+location.href);$('shareBtn').textContent='コピーしました';setTimeout(()=>$('shareBtn').textContent='結果をシェア',1500)}}catch(e){}};
+function serial(){return Math.floor(Math.random()*300)+1}
+function drawOne(){const r=Math.random();if(r<PROBABILITY.sendoff)return{type:'sendoff',event:'お見送り会',serial:serial()};if(r<PROBABILITY.sendoff+PROBABILITY.rehearsal)return{type:'rehearsal',event:'公開リハーサル',serial:serial()};return{type:'sorry'}}
+function buildWinner(result){const reh=result.type==='rehearsal'?' rehearsal':'';return `<div class="winner"><div class="winner-top">お見送り会 抽選券</div><div class="winner-title"><div class="event${reh}">${result.event}</div><div class="result">アタリ（参加券）</div></div><div class="date">集合日時：${dateText()}&nbsp; 指定時間までに会場へご集合ください。</div><div class="winner-bottom"><div class="notes">●記載の整理番号順にご参加いただけます。<br>●複数枚の参加券をお持ちでも、ご参加いただけるのは1回のみとなります。<br>●本券は参加時に回収いたします。<br>●紛失・盗難などの場合も再発行はいたしません。<br>●本券はお渡しした当日のみ有効となります。<br>●他公演ではご使用いただけません。<br>●イベント中の録音・録画は禁止いたします。<br>●係員の指示に従ってご参加ください。</div><div class="serial"><div class="serial-label">整理番号</div><div class="serial-number">${result.serial}</div></div><div class="bm">BM</div></div></div>`}
+function buildSorry(){return `<div class="sorry"><div class="sorry-top">抽選券</div><div class="sorry-word">Sorry</div><div class="sorry-box"></div><div class="sorry-text">●こちらはハズレの抽選券となります。<br>●こちらの抽選券ではお見送り会・公開リハーサルにご参加いただくことはできませんのでご了承ください。</div></div>`}
+function prepareCard(){currentResult=drawOne();frontFace.innerHTML=currentResult.type==='sorry'?buildSorry():buildWinner(currentResult)}
+function resetCard(){cardShell.classList.remove('flipped','bottom','new');cardShell.style.transform='';state='back';busy=false;$('instruction').textContent='1回タップ：表面をめくる'}
+function startDraw(){total=clamp($('qtyInput').value);current=1;counts={sorry:0,rehearsal:0,sendoff:0};resetCard();prepareCard();$('counter').textContent=`${current} / ${total} 枚目`;show(drawScreen)}
+function finish(){show(resultScreen);$('statTotal').textContent=total;$('statRehearsal').textContent=counts.rehearsal;$('statSendoff').textContent=counts.sendoff;$('statSorry').textContent=counts.sorry}
+function tapCard(){if(busy)return;if(state==='back'){busy=true;if(navigator.vibrate)navigator.vibrate(18);cardShell.classList.add('flipped');setTimeout(()=>{state='front';$('instruction').textContent=current===total?'もう1回タップ：結果を見る':'もう1回タップ：カードを一番下へ';busy=false},600);return}busy=true;counts[currentResult.type]++;if(navigator.vibrate)navigator.vibrate([12,35,12]);cardShell.classList.remove('flipped');cardShell.classList.add('bottom');setTimeout(()=>{if(current>=total){finish();resetCard();return}current++;prepareCard();$('counter').textContent=`${current} / ${total} 枚目`;cardShell.classList.remove('bottom');cardShell.style.transform='translate(-50%,-50%) rotateY(0deg)';void cardShell.offsetWidth;cardShell.classList.add('new');setTimeout(()=>{cardShell.classList.remove('new');cardShell.style.transform='';state='back';$('instruction').textContent='1回タップ：表面をめくる';busy=false},320)},700)}
+$('startBtn').onclick=startDraw;
+$('retryBtn').onclick=()=>{show(startScreen);resetCard()};
+$('shareBtn').onclick=async()=>{const text=`MONSTAGE 抽選結果\n挑戦 ${total}枚\n公開リハーサル ${counts.rehearsal}枚\nお見送り会 ${counts.sendoff}枚\nSorry ${counts.sorry}枚`;try{if(navigator.share){await navigator.share({title:'MONSTAGE 抽選結果',text})}else{await navigator.clipboard.writeText(text);alert('結果をコピーしました')}}catch(e){}}
+cardShell.addEventListener('click',tapCard);
+cardShell.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();tapCard()}});
 </script>
 </body>
 </html>
