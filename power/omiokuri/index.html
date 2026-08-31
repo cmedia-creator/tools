@@ -1,251 +1,88 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#101010">
-<title>BABYMONSTER 抽選シミュレーター | MONSTAGE</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0b0b0b">
+<title>MONSTAGE 抽選券シミュレーション</title>
 <style>
-:root{
-  --ticket:#efef67;
-  --ticket2:#dfe156;
-  --olive:#777c45;
-  --ink:#111;
-  --back-red:#cf3543;
-  --back-red-dark:#8f202b;
-}
-*{box-sizing:border-box}
-html,body{
-  margin:0;min-height:100%;
-  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
-  background:
-    radial-gradient(circle at 50% 18%,rgba(255,255,255,.05),transparent 32%),
-    linear-gradient(#1b1b1b,#0e0e0e);
-  color:#fff
-}
-body{min-height:100dvh}
+:root{--yellow:#eeef68;--yellow2:#e6e75b;--olive:#737844;--ink:#111}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;background:radial-gradient(circle at 50% 20%,rgba(255,255,255,.055),transparent 32%),linear-gradient(180deg,#1b1b1b,#0b0b0b);color:#fff}
+body{min-height:100dvh;overflow:hidden}
 button,input{font:inherit}
-.app{
-  width:min(100%,520px);min-height:100dvh;margin:auto;
-  display:flex;flex-direction:column;align-items:center;
-  padding:max(20px,env(safe-area-inset-top)) 14px max(20px,env(safe-area-inset-bottom))
-}
-.brand{font-size:11px;letter-spacing:.22em;color:#777;font-weight:800}
-.screen{display:none;width:100%;flex:1;flex-direction:column}
-.screen.active{display:flex}
-h1{margin:32px 0 8px;text-align:center;font-size:clamp(24px,7vw,34px);line-height:1.25}
-.sub{margin:0;text-align:center;font-size:12px;color:#aaa;line-height:1.7}
-.panel{
-  width:min(92vw,420px);margin:34px auto 0;padding:22px;
-  border:1px solid #2b2b2b;border-radius:20px;
-  background:rgba(255,255,255,.035);
-  box-shadow:0 18px 42px rgba(0,0,0,.28)
-}
-.question{text-align:center;font-size:16px;font-weight:900;margin-bottom:16px}
-.qtyrow{display:grid;grid-template-columns:48px 1fr 48px;gap:10px}
-.step,.quick button,.secondary{
-  border:1px solid #383838;background:#202020;color:#fff;border-radius:14px;cursor:pointer
-}
-.step{height:50px;font-size:24px}
-.qty{
-  height:50px;border:1px solid #444;border-radius:14px;background:#111;color:#fff;
-  text-align:center;font-size:22px;font-weight:900
-}
-.quick{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px}
-.quick button{padding:8px 12px;font-size:12px;font-weight:800}
-.primary{
-  width:100%;margin-top:18px;border:0;border-radius:14px;padding:15px;
-  background:var(--ticket);color:#111;font-weight:1000;cursor:pointer
-}
-.note{margin-top:12px;color:#666;font-size:10px;text-align:center;line-height:1.6}
-.drawhead{text-align:center;margin-top:18px}
-.counter{color:#777;font-size:11px;letter-spacing:.12em}
-.drawtitle{margin-top:10px;font-size:18px;font-weight:900}
-.stage{
-  width:min(96vw,520px);height:410px;position:relative;
-  perspective:1400px;perspective-origin:50% 40%;margin-top:12px
-}
-.sheet{
-  position:absolute;width:min(88vw,430px);aspect-ratio:91/55;left:50%;top:50%;
-  border-radius:2px;
-  background-color:var(--back-red);
-  background-image:repeating-linear-gradient(-7deg,rgba(143,32,43,.68) 0 1px,transparent 1px 15px),repeating-linear-gradient(83deg,rgba(143,32,43,.18) 0 1px,transparent 1px 42px);
-  box-shadow:0 15px 30px rgba(0,0,0,.25)
-}
-.s2{transform:translate(-50%,-43%) rotate(.7deg);opacity:.70}
-.s3{transform:translate(-50%,-37%) rotate(-.7deg);opacity:.38}
-.ticketwrap{
-  position:absolute;width:min(88vw,430px);aspect-ratio:91/55;
-  left:50%;top:50%;
-  transform:translate(-50%,-50%);
-  transform-style:preserve-3d;
-  cursor:pointer;z-index:10;
-  will-change:transform,filter;
-  touch-action:manipulation
-}
-.ticketwrap::before{
-  content:"";position:absolute;inset:-8% -4%;
-  border-radius:50%;
-  background:radial-gradient(ellipse at center,rgba(0,0,0,.42),transparent 68%);
-  transform:translateZ(-40px) translateY(15%);
-  filter:blur(11px);
-  opacity:.55;
-  pointer-events:none;
-  transition:opacity .25s
-}
-.ticketwrap.flipping{
-  animation:paperFlip 1.02s cubic-bezier(.18,.72,.22,1) forwards
-}
-.ticketwrap.flipped{
-  transform:translate(-50%,-50%) rotateY(180deg)
-}
-.ticketwrap.flipping::before{animation:shadowFlip 1.02s ease forwards}
-@keyframes paperFlip{
-  0%{transform:translate(-50%,-50%) rotateY(0deg) rotateX(0deg) rotateZ(0deg) translateY(0) scale(1);filter:brightness(1)}
-  18%{transform:translate(-50%,-57%) rotateY(-7deg) rotateX(12deg) rotateZ(-1.4deg) translateY(-3px) scale(1.015);filter:brightness(1.05)}
-  42%{transform:translate(-50%,-65%) rotateY(67deg) rotateX(19deg) rotateZ(-3deg) translateY(-7px) scaleX(.985) scaleY(1.025);filter:brightness(.92)}
-  56%{transform:translate(-50%,-67%) rotateY(105deg) rotateX(17deg) rotateZ(-2deg) translateY(-8px) scaleX(.97) scaleY(1.03);filter:brightness(.86)}
-  78%{transform:translate(-50%,-56%) rotateY(166deg) rotateX(7deg) rotateZ(.7deg) translateY(-2px) scale(1.012);filter:brightness(1.02)}
-  92%{transform:translate(-50%,-49%) rotateY(184deg) rotateX(-2deg) rotateZ(.2deg) scale(.998)}
-  100%{transform:translate(-50%,-50%) rotateY(180deg) rotateX(0deg) rotateZ(0deg) scale(1);filter:brightness(1)}
-}
-@keyframes shadowFlip{
-  0%{opacity:.55;transform:translateZ(-40px) translateY(15%) scale(1)}
-  45%{opacity:.18;transform:translateZ(-40px) translateY(35%) scale(.72)}
-  72%{opacity:.30;transform:translateZ(-40px) translateY(25%) scale(.86)}
-  100%{opacity:.55;transform:translateZ(-40px) translateY(15%) scale(1)}
-}
-.face{
-  position:absolute;inset:0;
-  backface-visibility:hidden;-webkit-backface-visibility:hidden;
-  border-radius:2px;overflow:hidden;
-  box-shadow:0 2px 3px rgba(0,0,0,.18),0 14px 32px rgba(0,0,0,.25);
-  transform-style:preserve-3d
-}
-.face::after{
-  content:"";position:absolute;inset:0;pointer-events:none;
-  background:radial-gradient(circle at 23% 10%,rgba(255,255,255,.17),transparent 22%),repeating-linear-gradient(0deg,rgba(255,255,255,.018) 0 1px,transparent 1px 3px),linear-gradient(180deg,rgba(255,255,255,.05),transparent 25%,rgba(30,20,10,.04) 100%);
-  mix-blend-mode:soft-light
-}
-.back{
-  color:#4b1016;
-  background-color:var(--back-red);
-  background-image:repeating-linear-gradient(-7deg,rgba(143,32,43,.62) 0 1px,transparent 1px 15px),repeating-linear-gradient(83deg,rgba(143,32,43,.16) 0 1px,transparent 1px 42px)
-}
-.back::before{
-  content:"MONSTAGE  MONSTAGE  MONSTAGE  MONSTAGE  MONSTAGE  MONSTAGE  MONSTAGE  MONSTAGE  MONSTAGE  MONSTAGE  MONSTAGE  MONSTAGE  MONSTAGE  MONSTAGE  MONSTAGE  MONSTAGE";
-  position:absolute;inset:-8% -12%;
-  color:rgba(126,22,31,.65);font:900 10px/1.55 Arial,sans-serif;letter-spacing:.05em;
-  word-spacing:.35em;transform:rotate(-7deg);overflow:hidden
-}
-.back-label{
-  position:absolute;left:50%;top:50%;
-  transform:translate(-50%,-50%) rotate(-7deg);
-  padding:.18em .45em;
-  background:rgba(207,53,67,.70);
-  border:1px solid rgba(92,15,23,.18);
-  color:#861d28;
-  font-size:clamp(18px,6vw,30px);
-  font-weight:1000;
-  letter-spacing:.11em;
-  text-shadow:0 1px rgba(255,255,255,.10);
-  opacity:.94
-}
-.back-tap{
-  position:absolute;right:4.5%;bottom:5%;
-  font-size:clamp(7px,1.8vw,10px);
-  font-weight:900;letter-spacing:.13em;
-  color:rgba(77,10,17,.72)
-}
-.front{
-  transform:rotateY(180deg);
-  color:var(--ink);
-  background:repeating-linear-gradient(0deg,rgba(70,70,20,.02) 0 1px,transparent 1px 3px),repeating-linear-gradient(90deg,rgba(70,70,20,.015) 0 1px,transparent 1px 4px),linear-gradient(105deg,rgba(255,255,255,.18),transparent 34%),var(--ticket)
-}
-.band{
-  height:16%;margin:5% 4.7% 0;display:flex;align-items:center;justify-content:center;
-  background:rgba(96,101,55,.8);color:#eef071;
-  font-size:clamp(10px,3.2vw,17px);font-weight:900
-}
-.headline{
-  margin:3.5% 4% 1%;height:28%;display:flex;justify-content:center;align-items:center;
-  text-align:center;line-height:1.08;font-weight:1000
-}
-.headline .main{font-size:clamp(25px,7vw,42px)}
-.headline.sorry .main{font-size:clamp(34px,10vw,60px);color:#555}
-.dateband{
-  margin:0 4.7%;height:11%;background:rgba(96,101,55,.8);color:#eef071;
-  font-size:clamp(7px,2.1vw,12px);font-weight:800;
-  display:flex;align-items:center;padding:0 2.2%;white-space:nowrap;overflow:hidden
-}
-.body{margin:2% 5%;height:33%;display:grid;grid-template-columns:1fr 25%;gap:2.4%}
-.notes{font-size:clamp(6px,1.6vw,10px);line-height:1.36;font-weight:700;overflow:hidden}
-.serial{border:2px solid rgba(30,30,20,.8);display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
-.serial .t{font-size:clamp(8px,2.2vw,13px);font-weight:900}
-.serial .n{font-size:clamp(27px,8vw,50px);font-weight:900;line-height:1}
-.serial .tot{font-size:clamp(11px,3.4vw,20px);font-weight:700}
-.code{position:absolute;right:4.5%;bottom:4%;font-size:clamp(18px,6vw,34px);transform:rotate(-10deg)}
-.hint{text-align:center;font-size:12px;color:#777;min-height:42px;transition:color .2s,transform .2s}
-.hint.live{color:#bbb;transform:translateY(-1px)}
-.next{margin:8px auto 0;border:1px solid #444;background:#1c1c1c;color:#fff;border-radius:999px;padding:11px 20px;font-weight:900;cursor:pointer;opacity:0;pointer-events:none;transform:translateY(5px);transition:.22s}
-.next.show{opacity:1;pointer-events:auto;transform:translateY(0)}
-.resultwrap{width:min(92vw,430px);margin:auto;text-align:center}
-.resultcard{margin-top:24px;padding:22px;background:#171717;border:1px solid #303030;border-radius:20px}
-.stat{display:flex;justify-content:space-between;padding:13px 0;border-bottom:1px solid #2b2b2b;font-weight:800}
-.stat:last-child{border-bottom:0}
-.stat strong{font-size:20px}
-.buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
-.secondary{padding:13px 10px;font-weight:900}
-.footer{margin-top:auto;padding-top:20px;color:#555;font-size:9px;text-align:center;line-height:1.6}
-@media(max-height:720px){.stage{height:350px}h1{margin-top:18px}}
-@media(prefers-reduced-motion:reduce){.ticketwrap.flipping{animation-duration:.25s}.ticketwrap.flipping::before{animation-duration:.25s}}
+.app{min-height:100dvh;width:min(100%,520px);margin:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:max(24px,env(safe-area-inset-top)) 14px max(28px,env(safe-area-inset-bottom))}
+.screen{display:none;width:100%;flex:1;flex-direction:column;align-items:center;justify-content:center}.screen.active{display:flex}
+.title{margin:0 0 6px;font-size:20px;letter-spacing:.08em;font-weight:800}.subtitle{margin:0 0 18px;color:#aaa;font-size:12px;text-align:center}.brand{font-size:10px;letter-spacing:.18em;color:#666;margin-bottom:14px}
+.panel{width:min(92vw,420px);padding:22px;background:rgba(255,255,255,.035);border:1px solid #2b2b2b;border-radius:18px;box-shadow:0 18px 42px rgba(0,0,0,.28)}
+.question{text-align:center;font-size:16px;font-weight:900;margin-bottom:16px}.qtyrow{display:grid;grid-template-columns:48px 1fr 48px;gap:10px}.step,.quick button,.secondary{border:1px solid #383838;background:#202020;color:#fff;border-radius:14px;cursor:pointer}.step{height:50px;font-size:24px}.qty{height:50px;border:1px solid #444;border-radius:14px;background:#111;color:#fff;text-align:center;font-size:22px;font-weight:900}.quick{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px}.quick button{padding:8px 12px;font-size:12px;font-weight:800}.primary{width:100%;margin-top:18px;border:0;border-radius:14px;padding:15px;background:var(--yellow);color:#111;font-weight:1000;cursor:pointer}.note{margin-top:12px;color:#666;font-size:10px;text-align:center;line-height:1.6}
+.stage{position:relative;width:min(96vw,520px);height:390px;perspective:1200px}
+.stack-card{position:absolute;left:50%;top:50%;width:min(88vw,430px);aspect-ratio:91/55;border-radius:2px;background:repeating-linear-gradient(-38deg,transparent 0 18px,rgba(95,100,52,.08) 18px 20px),var(--yellow2);box-shadow:0 12px 26px rgba(0,0,0,.24)}.stack-card.one{transform:translate(-50%,-44%) rotate(.7deg);opacity:.72}.stack-card.two{transform:translate(-50%,-39%) rotate(-.8deg);opacity:.45}
+.card-shell{position:absolute;left:50%;top:50%;width:min(88vw,430px);aspect-ratio:91/55;transform:translate(-50%,-50%);transform-style:preserve-3d;z-index:20;cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:manipulation}.card-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden;border-radius:2px;box-shadow:0 2px 3px rgba(0,0,0,.16),0 15px 30px rgba(0,0,0,.28)}
+.card-back{background:repeating-linear-gradient(0deg,rgba(70,70,20,.018) 0 1px,transparent 1px 3px),linear-gradient(105deg,rgba(255,255,255,.14),transparent 32%),var(--yellow);display:flex;align-items:center;justify-content:center;overflow:hidden}.back-pattern{position:absolute;width:150%;height:180%;left:-25%;top:-40%;display:grid;grid-template-columns:repeat(8,1fr);grid-auto-rows:22px;gap:1px 12px;align-content:center;transform:rotate(-38deg);transform-origin:center}.back-pattern span{font-size:10px;font-weight:600;letter-spacing:.05em;white-space:nowrap;color:rgba(91,96,48,.30)}
+.card-front{transform:rotateY(180deg);background:repeating-linear-gradient(0deg,rgba(70,70,20,.018) 0 1px,transparent 1px 3px),repeating-linear-gradient(90deg,rgba(70,70,20,.012) 0 1px,transparent 1px 4px),linear-gradient(105deg,rgba(255,255,255,.16),transparent 34%),var(--yellow);color:var(--ink)}.front-topband{height:14%;margin-top:4.8%;background:var(--olive);color:#edef72;display:flex;align-items:center;justify-content:center;font-size:clamp(11px,3.2vw,18px);font-weight:900;letter-spacing:.04em}.headline{height:23%;display:flex;align-items:center;justify-content:center;gap:5%;padding:0 4%;text-align:center;font-weight:900;line-height:1}.headline .event-name{font-size:clamp(18px,5.1vw,30px);white-space:nowrap}.headline .result-name{font-size:clamp(23px,6.6vw,40px);white-space:nowrap;letter-spacing:-.04em}.dateband{height:11%;margin:0;background:var(--olive);color:#edef72;display:flex;align-items:center;padding:0 4.8%;font-size:clamp(8px,2.25vw,13px);font-weight:900;white-space:nowrap;overflow:hidden}.front-body{height:47%;display:grid;grid-template-columns:1fr 25%;gap:2.5%;padding:2.3% 4.8% 3%}.notes{font-size:clamp(6px,1.58vw,9.5px);line-height:1.33;font-weight:700;overflow:hidden}.serialbox{border:2px solid rgba(25,25,15,.76);display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}.serial-title{font-size:clamp(9px,2.3vw,14px);font-weight:900;margin-bottom:10%}.serial-number{font-size:clamp(31px,9.5vw,58px);font-weight:900;line-height:1}.bm{position:absolute;right:4.8%;bottom:3.8%;font-size:clamp(17px,5.4vw,32px);font-weight:500;transform:rotate(-9deg)}
+.sorry-front .front-topband{margin-top:5%;height:13%}.sorry-main{position:relative;height:82%}.sorry-word{position:absolute;top:10%;left:0;right:0;text-align:center;font-size:clamp(38px,11vw,68px);font-weight:800;letter-spacing:-.03em}.sorry-notes{position:absolute;left:6%;right:29%;bottom:12%;font-size:clamp(8px,2vw,12px);line-height:1.6;font-weight:800}.blank-box{position:absolute;right:5%;top:31%;width:21%;height:42%;border:2px solid rgba(25,25,15,.72)}
+.card-shell.is-flipped{animation:flipToFront .62s cubic-bezier(.2,.7,.2,1) forwards}@keyframes flipToFront{0%{transform:translate(-50%,-50%) rotateY(0deg) rotateZ(0deg)}48%{transform:translate(-50%,-54%) rotateY(88deg) rotateZ(-1deg) scale(1.025)}100%{transform:translate(-50%,-50%) rotateY(180deg) rotateZ(0deg)}}
+.card-shell.to-bottom{animation:moveToBottom .72s cubic-bezier(.22,.72,.2,1) forwards}@keyframes moveToBottom{0%{transform:translate(-50%,-50%) rotateY(180deg) scale(1);opacity:1}35%{transform:translate(-50%,-72%) rotateY(180deg) rotateZ(-4deg) scale(.99);opacity:1}70%{transform:translate(-50%,-34%) rotateY(180deg) rotateZ(2deg) scale(.96);opacity:.7}100%{transform:translate(-50%,-31%) rotateY(180deg) scale(.93);opacity:0}}
+.card-shell.new-card{animation:newCardIn .35s ease-out both}@keyframes newCardIn{from{transform:translate(-50%,-43%) rotateY(0deg) scale(.975);opacity:.45}to{transform:translate(-50%,-50%) rotateY(0deg) scale(1);opacity:1}}
+.instruction{margin-top:4px;text-align:center;color:#aaa;font-size:12px;line-height:1.7}.counter{position:fixed;left:0;right:0;bottom:16px;text-align:center;color:#666;font-size:11px;letter-spacing:.11em}.result-card{width:min(92vw,430px);padding:22px;background:#171717;border:1px solid #303030;border-radius:20px}.stat{display:flex;justify-content:space-between;padding:13px 0;border-bottom:1px solid #2b2b2b;font-weight:800}.stat:last-child{border-bottom:0}.buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}.secondary{padding:13px 10px;font-weight:900}
+@media(max-height:720px){.stage{height:330px}.subtitle{margin-bottom:8px}.counter{bottom:6px}}
 </style>
 </head>
 <body>
 <main class="app">
-<div class="brand">MONSTAGE</div>
-<section id="start" class="screen active">
-  <h1>BABYMONSTER<br>抽選シミュレーター</h1>
-  <p class="sub">抽選券を1枚ずつめくって結果を確認</p>
+<section id="startScreen" class="screen active">
+  <div class="brand">MONSTAGE</div>
+  <h1 class="title">MONSTAGE 抽選券</h1>
+  <p class="subtitle">抽選券を何枚買いますか？</p>
   <div class="panel">
-    <div class="question">抽選券を何枚買いますか？</div>
-    <div class="qtyrow"><button class="step" id="minus">−</button><input class="qty" id="qty" type="number" min="1" max="100" value="10"><button class="step" id="plus">＋</button></div>
-    <div class="quick"><button data-q="1">1枚</button><button data-q="5">5枚</button><button data-q="10">10枚</button><button data-q="20">20枚</button><button data-q="50">50枚</button></div>
-    <button class="primary" id="startBtn">抽選券を受け取る</button>
+    <div class="question">購入枚数</div>
+    <div class="qtyrow"><button class="step" id="minusBtn">−</button><input id="qtyInput" class="qty" type="number" min="1" max="100" value="10" inputmode="numeric"><button class="step" id="plusBtn">＋</button></div>
+    <div class="quick"><button data-qty="1">1枚</button><button data-qty="5">5枚</button><button data-qty="10">10枚</button><button data-qty="20">20枚</button><button data-qty="50">50枚</button></div>
+    <button id="startBtn" class="primary">抽選券を受け取る</button>
     <div class="note">※非公式シミュレーターです。実際の抽選確率を示すものではありません。</div>
   </div>
 </section>
-<section id="draw" class="screen">
-  <div class="drawhead"><div class="counter"><span id="cur">1</span> / <span id="total">10</span> 枚目</div><div class="drawtitle">抽選券をめくる</div></div>
-  <div class="stage"><div class="sheet s3"></div><div class="sheet s2"></div><div class="ticketwrap" id="ticket" tabindex="0"><div class="face back"><div class="back-label">MONSTAGE</div><div class="back-tap">TAP TO OPEN</div></div><div class="face front"><div class="band" id="resultBand">抽選結果</div><div class="headline" id="headline"><span class="main" id="resultText">sorry</span></div><div class="dateband" id="dateBand"></div><div class="body"><div class="notes" id="notes"></div><div class="serial" id="serial"><div class="t">整理番号</div><div class="n" id="serialNo">157</div><div class="tot">/300</div></div></div><div class="code">BM</div></div></div></div>
-  <div class="hint live" id="hint">抽選券をタップしてめくる</div>
-  <button class="next" id="next">次の抽選券へ</button>
+<section id="drawScreen" class="screen">
+  <h1 class="title">MONSTAGE 抽選券</h1><p class="subtitle">カードをタップして抽選</p>
+  <section class="stage"><div class="stack-card two"></div><div class="stack-card one"></div>
+    <div class="card-shell" id="cardShell" tabindex="0" role="button" aria-label="抽選券をめくる">
+      <div class="card-face card-back"><div class="back-pattern" aria-hidden="true" id="backPattern"></div></div>
+      <div class="card-face card-front" id="frontFace"></div>
+    </div>
+  </section>
+  <div class="instruction" id="instruction">1回目のタップで結果を確認</div>
+  <div class="counter" id="counter">1 / 10 枚目</div>
 </section>
-<section id="result" class="screen">
-  <div class="resultwrap"><h1>RESULT</h1><p class="sub">今回の抽選結果</p><div class="resultcard"><div class="stat"><span>挑戦</span><strong><span id="st">0</span>枚</strong></div><div class="stat"><span>公開リハーサル</span><strong><span id="sr">0</span>枚</strong></div><div class="stat"><span>お見送り会</span><strong><span id="so">0</span>枚</strong></div><div class="stat"><span>sorry</span><strong><span id="ss">0</span>枚</strong></div><div class="buttons"><button class="secondary" id="retry">もう一度</button><button class="secondary" id="share">結果をシェア</button></div></div></div>
+<section id="resultScreen" class="screen">
+  <h1 class="title">RESULT</h1><p class="subtitle">今回の抽選結果</p>
+  <div class="result-card">
+    <div class="stat"><span>挑戦</span><strong><span id="statTotal">0</span>枚</strong></div>
+    <div class="stat"><span>公開リハーサル</span><strong><span id="statRehearsal">0</span>枚</strong></div>
+    <div class="stat"><span>お見送り会</span><strong><span id="statSendoff">0</span>枚</strong></div>
+    <div class="stat"><span>sorry</span><strong><span id="statSorry">0</span>枚</strong></div>
+    <div class="buttons"><button class="secondary" id="retryBtn">もう一度</button><button class="secondary" id="shareBtn">結果をシェア</button></div>
+  </div>
 </section>
-<footer class="footer">MONSTAGE fan mini app<br>非公式ファンコンテンツ / 実際の抽選・当選確率とは関係ありません</footer>
 </main>
 <script>
 const PROBABILITY={sendoff:.01,rehearsal:.05,sorry:.94};
 const $=id=>document.getElementById(id);
-let total=10,current=1,flipped=false,busy=false;
-let counts={sorry:0,rehearsal:0,sendoff:0};
-function show(s){[$("start"),$("draw"),$("result")].forEach(x=>x.classList.remove("active"));s.classList.add("active");window.scrollTo({top:0,behavior:"smooth"})}
-function clamp(v){let n=parseInt(v||1,10);return Math.min(100,Math.max(1,isNaN(n)?1:n))}
-$("minus").onclick=()=>$("qty").value=clamp(+$("qty").value-1);
-$("plus").onclick=()=>$("qty").value=clamp(+$("qty").value+1);
-document.querySelectorAll("[data-q]").forEach(b=>b.onclick=()=>$("qty").value=b.dataset.q);
-function dateText(){const d=new Date(),w=["日","月","火","水","木","金","土"];return `抽選日：${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日（${w[d.getDay()]}）`}
-function drawOne(){const r=Math.random();if(r<PROBABILITY.sendoff)return{type:"sendoff",text:"お見送り会<br>アタリ"};if(r<PROBABILITY.sendoff+PROBABILITY.rehearsal)return{type:"rehearsal",text:"公開リハーサル<br>アタリ"};return{type:"sorry",text:"sorry"}}
-function setFace(r){$("resultText").innerHTML=r.text;$("headline").className="headline"+(r.type==="sorry"?" sorry":"");$("dateBand").textContent=dateText();if(r.type==="sorry"){$("resultBand").textContent="抽選結果";$("serial").style.visibility="hidden";$("notes").innerHTML="残念ながら今回はハズレです。<br><br>次の抽選券をめくってください。"}else{$("resultBand").textContent=r.type==="sendoff"?"お見送り会 抽選券":"公開リハーサル 抽選券";$("serial").style.visibility="visible";$("serialNo").textContent=Math.floor(Math.random()*300)+1;$("notes").innerHTML="アタリ！<br><br>当選券は会場係員の案内に従ってご利用ください。<br><br>本シミュレーターは非公式ファンコンテンツです。"}}
-function reset(){busy=false;flipped=false;$("ticket").classList.remove("flipping","flipped");$("next").classList.remove("show");$("hint").classList.add("live");$("hint").textContent="抽選券をタップしてめくる";$("cur").textContent=current;$("serial").style.visibility="hidden"}
-function flip(){if(busy||flipped)return;busy=true;const r=drawOne();counts[r.type]++;setFace(r);const t=$("ticket");t.classList.remove("flipped");void t.offsetWidth;t.classList.add("flipping");if(navigator.vibrate)navigator.vibrate(r.type==="sendoff"?[65,45,110]:r.type==="rehearsal"?65:25);setTimeout(()=>{t.classList.remove("flipping");t.classList.add("flipped");flipped=true;$("hint").classList.remove("live");$("hint").textContent=r.type==="sorry"?"sorry":r.type==="sendoff"?"お見送り会 アタリ！":"公開リハーサル アタリ！";$("next").textContent=current===total?"結果を見る":"次の抽選券へ";$("next").classList.add("show");busy=false},1020)}
-$("ticket").onclick=flip;$("ticket").onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();flip()}};
-$("startBtn").onclick=()=>{total=clamp($("qty").value);current=1;counts={sorry:0,rehearsal:0,sendoff:0};$("total").textContent=total;reset();show($("draw"))};
-$("next").onclick=()=>{if(busy||!flipped)return;if(current>=total){$("st").textContent=total;$("sr").textContent=counts.rehearsal;$("so").textContent=counts.sendoff;$("ss").textContent=counts.sorry;show($("result"));return}current++;reset()};
-$("retry").onclick=()=>show($("start"));
-$("share").onclick=async()=>{const text=`BABYMONSTER 抽選シミュレーター\n🎫 ${total}枚挑戦\n🎥 公開リハーサル：${counts.rehearsal}枚\n👋 お見送り会：${counts.sendoff}枚\n🥲 sorry：${counts.sorry}枚\n\n#BABYMONSTER #MONSTAGE`;try{if(navigator.share){await navigator.share({title:"BABYMONSTER 抽選シミュレーター",text,url:location.href})}else{await navigator.clipboard.writeText(text+"\n"+location.href);$("share").textContent="コピーしました";setTimeout(()=>$("share").textContent="結果をシェア",1500)}}catch(e){}};
+const startScreen=$('startScreen'),drawScreen=$('drawScreen'),resultScreen=$('resultScreen'),cardShell=$('cardShell');
+let total=10,current=1,state='back',busy=false,counts={sorry:0,rehearsal:0,sendoff:0};
+$('backPattern').innerHTML=Array.from({length:64},()=>'<span>MONSTAGE</span>').join('');
+function show(screen){[startScreen,drawScreen,resultScreen].forEach(s=>s.classList.remove('active'));screen.classList.add('active')}
+function clamp(v){let n=parseInt(v||1,10);return Math.min(100,Math.max(1,Number.isNaN(n)?1:n))}
+$('minusBtn').onclick=()=>$('qtyInput').value=clamp(+$('qtyInput').value-1);$('plusBtn').onclick=()=>$('qtyInput').value=clamp(+$('qtyInput').value+1);document.querySelectorAll('[data-qty]').forEach(b=>b.onclick=()=>$('qtyInput').value=b.dataset.qty);
+function dateText(){const d=new Date(),w=['日','月','火','水','木','金','土'];return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日（${w[d.getDay()]}）`}
+function drawOne(){const r=Math.random();if(r<PROBABILITY.sendoff)return{type:'sendoff',event:'お見送り会'};if(r<PROBABILITY.sendoff+PROBABILITY.rehearsal)return{type:'rehearsal',event:'公開リハーサル'};return{type:'sorry'}}
+function buildFront(result){if(result.type==='sorry'){return `<div class="sorry-front"><div class="front-topband">抽選結果</div><div class="sorry-main"><div class="sorry-word">sorry</div><div class="sorry-notes">残念ながら今回はハズレです。<br>次の抽選券をめくってください。</div><div class="blank-box"></div></div></div>`}const serial=Math.floor(Math.random()*300)+1;return `<div class="front-topband">${result.event} 抽選券</div><div class="headline"><span class="event-name">${result.event}</span><span class="result-name">アタリ</span></div><div class="dateband">集合日時：${dateText()}　指定時間までに会場へご集合ください。</div><div class="front-body"><div class="notes">●記載の整理番号順にご参加いただけます。<br>●本券は参加時に回収いたします。<br>●紛失・盗難時の再発行はいたしません。<br>●本券は当日のみ有効です。<br>●係員の指示に従ってご参加ください。</div><div class="serialbox"><div class="serial-title">整理番号</div><div class="serial-number">${serial}</div></div></div><div class="bm">BM</div>`}
+function resetCard(){busy=false;state='back';cardShell.className='card-shell';$('frontFace').innerHTML='';$('instruction').textContent='1回目のタップで結果を確認';$('counter').textContent=`${current} / ${total} 枚目`}
+function tapCard(){if(busy)return;if(state==='back'){busy=true;const result=drawOne();counts[result.type]++;$('frontFace').innerHTML=buildFront(result);cardShell.classList.add('is-flipped');state='front';if(navigator.vibrate)navigator.vibrate(result.type==='sendoff'?[70,50,120]:result.type==='rehearsal'?70:25);setTimeout(()=>{busy=false;$('instruction').textContent='もう一度タップで次の抽選券へ'},650)}else if(state==='front'){busy=true;cardShell.classList.remove('is-flipped');cardShell.classList.add('to-bottom');setTimeout(()=>{if(current>=total){showResult();return}current++;cardShell.className='card-shell new-card';$('frontFace').innerHTML='';$('counter').textContent=`${current} / ${total} 枚目`;$('instruction').textContent='1回目のタップで結果を確認';state='back';setTimeout(()=>{cardShell.className='card-shell';busy=false},360)},720)}}
+cardShell.onclick=tapCard;cardShell.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();tapCard()}};
+$('startBtn').onclick=()=>{total=clamp($('qtyInput').value);current=1;counts={sorry:0,rehearsal:0,sendoff:0};resetCard();show(drawScreen)};
+function showResult(){$('statTotal').textContent=total;$('statRehearsal').textContent=counts.rehearsal;$('statSendoff').textContent=counts.sendoff;$('statSorry').textContent=counts.sorry;show(resultScreen);busy=false}
+$('retryBtn').onclick=()=>show(startScreen);$('shareBtn').onclick=async()=>{const text=`MONSTAGE 抽選券シミュレーション\n🎫 ${total}枚挑戦\n🎥 公開リハーサル：${counts.rehearsal}枚\n👋 お見送り会：${counts.sendoff}枚\n🥲 sorry：${counts.sorry}枚\n\n#MONSTAGE`;try{if(navigator.share){await navigator.share({title:'MONSTAGE 抽選券シミュレーション',text,url:location.href})}else{await navigator.clipboard.writeText(text+'\n'+location.href);$('shareBtn').textContent='コピーしました';setTimeout(()=>$('shareBtn').textContent='結果をシェア',1500)}}catch(e){}};
 </script>
 </body>
 </html>
