@@ -3,36 +3,249 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101010">
 <title>BABYMONSTER 抽選シミュレーター | MONSTAGE</title>
 <style>
-:root{--ticket:#efef67;--ticket2:#dfe156;--olive:#777c45;--ink:#111}
-*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;background:radial-gradient(circle at 50% 18%,rgba(255,255,255,.05),transparent 32%),linear-gradient(#1b1b1b,#0e0e0e);color:#fff}body{min-height:100dvh}button,input{font:inherit}.app{width:min(100%,520px);min-height:100dvh;margin:auto;display:flex;flex-direction:column;align-items:center;padding:20px 14px}.brand{font-size:11px;letter-spacing:.22em;color:#777;font-weight:800}.screen{display:none;width:100%;flex:1;flex-direction:column}.screen.active{display:flex}h1{margin:32px 0 8px;text-align:center;font-size:clamp(24px,7vw,34px);line-height:1.25}.sub{margin:0;text-align:center;font-size:12px;color:#aaa;line-height:1.7}.panel{width:min(92vw,420px);margin:34px auto 0;padding:22px;border:1px solid #2b2b2b;border-radius:20px;background:rgba(255,255,255,.035);box-shadow:0 18px 42px rgba(0,0,0,.28)}.question{text-align:center;font-size:16px;font-weight:900;margin-bottom:16px}.qtyrow{display:grid;grid-template-columns:48px 1fr 48px;gap:10px}.step,.quick button,.secondary{border:1px solid #383838;background:#202020;color:#fff;border-radius:14px;cursor:pointer}.step{height:50px;font-size:24px}.qty{height:50px;border:1px solid #444;border-radius:14px;background:#111;color:#fff;text-align:center;font-size:22px;font-weight:900}.quick{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px}.quick button{padding:8px 12px;font-size:12px;font-weight:800}.primary{width:100%;margin-top:18px;border:0;border-radius:14px;padding:15px;background:var(--ticket);color:#111;font-weight:1000;cursor:pointer}.note{margin-top:12px;color:#666;font-size:10px;text-align:center;line-height:1.6}
-.drawhead{text-align:center;margin-top:18px}.counter{color:#777;font-size:11px;letter-spacing:.12em}.drawtitle{margin-top:10px;font-size:18px;font-weight:900}.stage{width:min(96vw,520px);height:390px;position:relative;perspective:1200px;margin-top:12px}.sheet{position:absolute;width:min(88vw,430px);aspect-ratio:91/55;left:50%;top:50%;border-radius:2px;background:var(--ticket2);box-shadow:0 15px 30px rgba(0,0,0,.25)}.s2{transform:translate(-50%,-45%) rotate(.7deg);opacity:.72}.s3{transform:translate(-50%,-40%) rotate(-.7deg);opacity:.42}.ticketwrap{position:absolute;width:min(88vw,430px);aspect-ratio:91/55;left:50%;top:50%;transform:translate(-50%,-50%);transform-style:preserve-3d;transition:transform .68s cubic-bezier(.2,.78,.25,1);cursor:pointer;z-index:10}.ticketwrap.flipped{transform:translate(-50%,-50%) rotateY(180deg)}.face{position:absolute;inset:0;backface-visibility:hidden;border-radius:2px;overflow:hidden;box-shadow:0 2px 3px rgba(0,0,0,.18),0 14px 32px rgba(0,0,0,.25);background:repeating-linear-gradient(0deg,rgba(70,70,20,.02) 0 1px,transparent 1px 3px),repeating-linear-gradient(90deg,rgba(70,70,20,.015) 0 1px,transparent 1px 4px),linear-gradient(105deg,rgba(255,255,255,.18),transparent 34%),var(--ticket);color:var(--ink)}.face:after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 23% 10%,rgba(255,255,255,.22),transparent 22%),linear-gradient(180deg,rgba(255,255,255,.05),transparent 25%,rgba(70,65,20,.02) 100%)}.front{transform:rotateY(180deg)}.band{height:16%;margin:5% 4.7% 0;display:flex;align-items:center;justify-content:center;background:rgba(96,101,55,.8);color:#eef071;font-size:clamp(10px,3.2vw,17px);font-weight:900}.backcenter{position:absolute;inset:23% 5% 16%;display:flex;align-items:center;justify-content:center}.monstage{font-size:clamp(28px,10vw,56px);font-weight:1000;letter-spacing:.08em}.smallmark{position:absolute;left:5%;bottom:6%;font-size:clamp(7px,1.8vw,11px);font-weight:800;color:#3b3b26}.code{position:absolute;right:4.5%;bottom:4%;font-size:clamp(18px,6vw,34px);transform:rotate(-10deg)}.headline{margin:3.5% 4% 1%;height:28%;display:flex;justify-content:center;align-items:center;text-align:center;line-height:1.08;font-weight:1000}.headline .main{font-size:clamp(25px,7vw,42px)}.headline.sorry .main{font-size:clamp(34px,10vw,60px);color:#555}.dateband{margin:0 4.7%;height:11%;background:rgba(96,101,55,.8);color:#eef071;font-size:clamp(7px,2.1vw,12px);font-weight:800;display:flex;align-items:center;padding:0 2.2%;white-space:nowrap;overflow:hidden}.body{margin:2% 5%;height:33%;display:grid;grid-template-columns:1fr 25%;gap:2.4%}.notes{font-size:clamp(6px,1.6vw,10px);line-height:1.36;font-weight:700;overflow:hidden}.serial{border:2px solid rgba(30,30,20,.8);display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}.serial .t{font-size:clamp(8px,2.2vw,13px);font-weight:900}.serial .n{font-size:clamp(27px,8vw,50px);font-weight:900;line-height:1}.serial .tot{font-size:clamp(11px,3.4vw,20px);font-weight:700}.hint{text-align:center;font-size:12px;color:#777;min-height:42px}.next{margin:8px auto 0;border:1px solid #444;background:#1c1c1c;color:#fff;border-radius:999px;padding:11px 20px;font-weight:900;cursor:pointer;opacity:0;pointer-events:none}.next.show{opacity:1;pointer-events:auto}.resultwrap{width:min(92vw,430px);margin:auto;text-align:center}.resultcard{margin-top:24px;padding:22px;background:#171717;border:1px solid #303030;border-radius:20px}.stat{display:flex;justify-content:space-between;padding:13px 0;border-bottom:1px solid #2b2b2b;font-weight:800}.stat:last-child{border-bottom:0}.stat strong{font-size:20px}.buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}.secondary{padding:13px 10px;font-weight:900}.footer{margin-top:auto;padding-top:20px;color:#555;font-size:9px;text-align:center;line-height:1.6}@media(max-height:720px){.stage{height:340px}h1{margin-top:18px}}
+:root{
+  --ticket:#efef67;
+  --ticket2:#dfe156;
+  --olive:#777c45;
+  --ink:#111;
+  --back-red:#cf3543;
+  --back-red-dark:#8f202b;
+}
+*{box-sizing:border-box}
+html,body{
+  margin:0;min-height:100%;
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+  background:
+    radial-gradient(circle at 50% 18%,rgba(255,255,255,.05),transparent 32%),
+    linear-gradient(#1b1b1b,#0e0e0e);
+  color:#fff
+}
+body{min-height:100dvh}
+button,input{font:inherit}
+.app{
+  width:min(100%,520px);min-height:100dvh;margin:auto;
+  display:flex;flex-direction:column;align-items:center;
+  padding:max(20px,env(safe-area-inset-top)) 14px max(20px,env(safe-area-inset-bottom))
+}
+.brand{font-size:11px;letter-spacing:.22em;color:#777;font-weight:800}
+.screen{display:none;width:100%;flex:1;flex-direction:column}
+.screen.active{display:flex}
+h1{margin:32px 0 8px;text-align:center;font-size:clamp(24px,7vw,34px);line-height:1.25}
+.sub{margin:0;text-align:center;font-size:12px;color:#aaa;line-height:1.7}
+.panel{
+  width:min(92vw,420px);margin:34px auto 0;padding:22px;
+  border:1px solid #2b2b2b;border-radius:20px;
+  background:rgba(255,255,255,.035);
+  box-shadow:0 18px 42px rgba(0,0,0,.28)
+}
+.question{text-align:center;font-size:16px;font-weight:900;margin-bottom:16px}
+.qtyrow{display:grid;grid-template-columns:48px 1fr 48px;gap:10px}
+.step,.quick button,.secondary{
+  border:1px solid #383838;background:#202020;color:#fff;border-radius:14px;cursor:pointer
+}
+.step{height:50px;font-size:24px}
+.qty{
+  height:50px;border:1px solid #444;border-radius:14px;background:#111;color:#fff;
+  text-align:center;font-size:22px;font-weight:900
+}
+.quick{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+.quick button{padding:8px 12px;font-size:12px;font-weight:800}
+.primary{
+  width:100%;margin-top:18px;border:0;border-radius:14px;padding:15px;
+  background:var(--ticket);color:#111;font-weight:1000;cursor:pointer
+}
+.note{margin-top:12px;color:#666;font-size:10px;text-align:center;line-height:1.6}
+.drawhead{text-align:center;margin-top:18px}
+.counter{color:#777;font-size:11px;letter-spacing:.12em}
+.drawtitle{margin-top:10px;font-size:18px;font-weight:900}
+.stage{
+  width:min(96vw,520px);height:410px;position:relative;
+  perspective:1400px;perspective-origin:50% 40%;margin-top:12px
+}
+.sheet{
+  position:absolute;width:min(88vw,430px);aspect-ratio:91/55;left:50%;top:50%;
+  border-radius:2px;
+  background-color:var(--back-red);
+  background-image:repeating-linear-gradient(-7deg,rgba(143,32,43,.68) 0 1px,transparent 1px 15px),repeating-linear-gradient(83deg,rgba(143,32,43,.18) 0 1px,transparent 1px 42px);
+  box-shadow:0 15px 30px rgba(0,0,0,.25)
+}
+.s2{transform:translate(-50%,-43%) rotate(.7deg);opacity:.70}
+.s3{transform:translate(-50%,-37%) rotate(-.7deg);opacity:.38}
+.ticketwrap{
+  position:absolute;width:min(88vw,430px);aspect-ratio:91/55;
+  left:50%;top:50%;
+  transform:translate(-50%,-50%);
+  transform-style:preserve-3d;
+  cursor:pointer;z-index:10;
+  will-change:transform,filter;
+  touch-action:manipulation
+}
+.ticketwrap::before{
+  content:"";position:absolute;inset:-8% -4%;
+  border-radius:50%;
+  background:radial-gradient(ellipse at center,rgba(0,0,0,.42),transparent 68%);
+  transform:translateZ(-40px) translateY(15%);
+  filter:blur(11px);
+  opacity:.55;
+  pointer-events:none;
+  transition:opacity .25s
+}
+.ticketwrap.flipping{
+  animation:paperFlip 1.02s cubic-bezier(.18,.72,.22,1) forwards
+}
+.ticketwrap.flipped{
+  transform:translate(-50%,-50%) rotateY(180deg)
+}
+.ticketwrap.flipping::before{animation:shadowFlip 1.02s ease forwards}
+@keyframes paperFlip{
+  0%{transform:translate(-50%,-50%) rotateY(0deg) rotateX(0deg) rotateZ(0deg) translateY(0) scale(1);filter:brightness(1)}
+  18%{transform:translate(-50%,-57%) rotateY(-7deg) rotateX(12deg) rotateZ(-1.4deg) translateY(-3px) scale(1.015);filter:brightness(1.05)}
+  42%{transform:translate(-50%,-65%) rotateY(67deg) rotateX(19deg) rotateZ(-3deg) translateY(-7px) scaleX(.985) scaleY(1.025);filter:brightness(.92)}
+  56%{transform:translate(-50%,-67%) rotateY(105deg) rotateX(17deg) rotateZ(-2deg) translateY(-8px) scaleX(.97) scaleY(1.03);filter:brightness(.86)}
+  78%{transform:translate(-50%,-56%) rotateY(166deg) rotateX(7deg) rotateZ(.7deg) translateY(-2px) scale(1.012);filter:brightness(1.02)}
+  92%{transform:translate(-50%,-49%) rotateY(184deg) rotateX(-2deg) rotateZ(.2deg) scale(.998)}
+  100%{transform:translate(-50%,-50%) rotateY(180deg) rotateX(0deg) rotateZ(0deg) scale(1);filter:brightness(1)}
+}
+@keyframes shadowFlip{
+  0%{opacity:.55;transform:translateZ(-40px) translateY(15%) scale(1)}
+  45%{opacity:.18;transform:translateZ(-40px) translateY(35%) scale(.72)}
+  72%{opacity:.30;transform:translateZ(-40px) translateY(25%) scale(.86)}
+  100%{opacity:.55;transform:translateZ(-40px) translateY(15%) scale(1)}
+}
+.face{
+  position:absolute;inset:0;
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  border-radius:2px;overflow:hidden;
+  box-shadow:0 2px 3px rgba(0,0,0,.18),0 14px 32px rgba(0,0,0,.25);
+  transform-style:preserve-3d
+}
+.face::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(circle at 23% 10%,rgba(255,255,255,.17),transparent 22%),repeating-linear-gradient(0deg,rgba(255,255,255,.018) 0 1px,transparent 1px 3px),linear-gradient(180deg,rgba(255,255,255,.05),transparent 25%,rgba(30,20,10,.04) 100%);
+  mix-blend-mode:soft-light
+}
+.back{
+  color:#4b1016;
+  background-color:var(--back-red);
+  background-image:repeating-linear-gradient(-7deg,rgba(143,32,43,.62) 0 1px,transparent 1px 15px),repeating-linear-gradient(83deg,rgba(143,32,43,.16) 0 1px,transparent 1px 42px)
+}
+.back::before{
+  content:"MONSTAGE  MONSTAGE  MONSTAGE  MONSTAGE  MONSTAGE  MONSTAGE  MONSTAGE  MONSTAGE  MONSTAGE  MONSTAGE  MONSTAGE  MONSTAGE  MONSTAGE  MONSTAGE  MONSTAGE  MONSTAGE";
+  position:absolute;inset:-8% -12%;
+  color:rgba(126,22,31,.65);font:900 10px/1.55 Arial,sans-serif;letter-spacing:.05em;
+  word-spacing:.35em;transform:rotate(-7deg);overflow:hidden
+}
+.back-label{
+  position:absolute;left:50%;top:50%;
+  transform:translate(-50%,-50%) rotate(-7deg);
+  padding:.18em .45em;
+  background:rgba(207,53,67,.70);
+  border:1px solid rgba(92,15,23,.18);
+  color:#861d28;
+  font-size:clamp(18px,6vw,30px);
+  font-weight:1000;
+  letter-spacing:.11em;
+  text-shadow:0 1px rgba(255,255,255,.10);
+  opacity:.94
+}
+.back-tap{
+  position:absolute;right:4.5%;bottom:5%;
+  font-size:clamp(7px,1.8vw,10px);
+  font-weight:900;letter-spacing:.13em;
+  color:rgba(77,10,17,.72)
+}
+.front{
+  transform:rotateY(180deg);
+  color:var(--ink);
+  background:repeating-linear-gradient(0deg,rgba(70,70,20,.02) 0 1px,transparent 1px 3px),repeating-linear-gradient(90deg,rgba(70,70,20,.015) 0 1px,transparent 1px 4px),linear-gradient(105deg,rgba(255,255,255,.18),transparent 34%),var(--ticket)
+}
+.band{
+  height:16%;margin:5% 4.7% 0;display:flex;align-items:center;justify-content:center;
+  background:rgba(96,101,55,.8);color:#eef071;
+  font-size:clamp(10px,3.2vw,17px);font-weight:900
+}
+.headline{
+  margin:3.5% 4% 1%;height:28%;display:flex;justify-content:center;align-items:center;
+  text-align:center;line-height:1.08;font-weight:1000
+}
+.headline .main{font-size:clamp(25px,7vw,42px)}
+.headline.sorry .main{font-size:clamp(34px,10vw,60px);color:#555}
+.dateband{
+  margin:0 4.7%;height:11%;background:rgba(96,101,55,.8);color:#eef071;
+  font-size:clamp(7px,2.1vw,12px);font-weight:800;
+  display:flex;align-items:center;padding:0 2.2%;white-space:nowrap;overflow:hidden
+}
+.body{margin:2% 5%;height:33%;display:grid;grid-template-columns:1fr 25%;gap:2.4%}
+.notes{font-size:clamp(6px,1.6vw,10px);line-height:1.36;font-weight:700;overflow:hidden}
+.serial{border:2px solid rgba(30,30,20,.8);display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+.serial .t{font-size:clamp(8px,2.2vw,13px);font-weight:900}
+.serial .n{font-size:clamp(27px,8vw,50px);font-weight:900;line-height:1}
+.serial .tot{font-size:clamp(11px,3.4vw,20px);font-weight:700}
+.code{position:absolute;right:4.5%;bottom:4%;font-size:clamp(18px,6vw,34px);transform:rotate(-10deg)}
+.hint{text-align:center;font-size:12px;color:#777;min-height:42px;transition:color .2s,transform .2s}
+.hint.live{color:#bbb;transform:translateY(-1px)}
+.next{margin:8px auto 0;border:1px solid #444;background:#1c1c1c;color:#fff;border-radius:999px;padding:11px 20px;font-weight:900;cursor:pointer;opacity:0;pointer-events:none;transform:translateY(5px);transition:.22s}
+.next.show{opacity:1;pointer-events:auto;transform:translateY(0)}
+.resultwrap{width:min(92vw,430px);margin:auto;text-align:center}
+.resultcard{margin-top:24px;padding:22px;background:#171717;border:1px solid #303030;border-radius:20px}
+.stat{display:flex;justify-content:space-between;padding:13px 0;border-bottom:1px solid #2b2b2b;font-weight:800}
+.stat:last-child{border-bottom:0}
+.stat strong{font-size:20px}
+.buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+.secondary{padding:13px 10px;font-weight:900}
+.footer{margin-top:auto;padding-top:20px;color:#555;font-size:9px;text-align:center;line-height:1.6}
+@media(max-height:720px){.stage{height:350px}h1{margin-top:18px}}
+@media(prefers-reduced-motion:reduce){.ticketwrap.flipping{animation-duration:.25s}.ticketwrap.flipping::before{animation-duration:.25s}}
 </style>
 </head>
 <body>
 <main class="app">
 <div class="brand">MONSTAGE</div>
-<section id="start" class="screen active"><h1>BABYMONSTER<br>抽選シミュレーター</h1><p class="sub">抽選券を1枚ずつめくって結果を確認</p><div class="panel"><div class="question">抽選券を何枚買いますか？</div><div class="qtyrow"><button class="step" id="minus">−</button><input class="qty" id="qty" type="number" min="1" max="100" value="10"><button class="step" id="plus">＋</button></div><div class="quick"><button data-q="1">1枚</button><button data-q="5">5枚</button><button data-q="10">10枚</button><button data-q="20">20枚</button><button data-q="50">50枚</button></div><button class="primary" id="startBtn">抽選券を受け取る</button><div class="note">※非公式シミュレーターです。実際の抽選確率を示すものではありません。</div></div></section>
-<section id="draw" class="screen"><div class="drawhead"><div class="counter"><span id="cur">1</span> / <span id="total">10</span> 枚目</div><div class="drawtitle">抽選券をめくる</div></div><div class="stage"><div class="sheet s3"></div><div class="sheet s2"></div><div class="ticketwrap" id="ticket" tabindex="0"><div class="face"><div class="band">BABYMONSTER 抽選券</div><div class="backcenter"><div class="monstage">MONSTAGE</div></div><div class="smallmark">TAP TO OPEN</div><div class="code">BM</div></div><div class="face front"><div class="band" id="resultBand">抽選結果</div><div class="headline" id="headline"><span class="main" id="resultText">sorry</span></div><div class="dateband" id="dateBand"></div><div class="body"><div class="notes" id="notes"></div><div class="serial" id="serial"><div class="t">整理番号</div><div class="n" id="serialNo">157</div><div class="tot">/300</div></div></div><div class="code">BM</div></div></div></div><div class="hint" id="hint">抽選券をタップ</div><button class="next" id="next">次の抽選券へ</button></section>
-<section id="result" class="screen"><div class="resultwrap"><h1>RESULT</h1><p class="sub">今回の抽選結果</p><div class="resultcard"><div class="stat"><span>挑戦</span><strong><span id="st">0</span>枚</strong></div><div class="stat"><span>公開リハーサル</span><strong><span id="sr">0</span>枚</strong></div><div class="stat"><span>お見送り会</span><strong><span id="so">0</span>枚</strong></div><div class="stat"><span>sorry</span><strong><span id="ss">0</span>枚</strong></div><div class="buttons"><button class="secondary" id="retry">もう一度</button><button class="secondary" id="share">結果をシェア</button></div></div></div></section>
+<section id="start" class="screen active">
+  <h1>BABYMONSTER<br>抽選シミュレーター</h1>
+  <p class="sub">抽選券を1枚ずつめくって結果を確認</p>
+  <div class="panel">
+    <div class="question">抽選券を何枚買いますか？</div>
+    <div class="qtyrow"><button class="step" id="minus">−</button><input class="qty" id="qty" type="number" min="1" max="100" value="10"><button class="step" id="plus">＋</button></div>
+    <div class="quick"><button data-q="1">1枚</button><button data-q="5">5枚</button><button data-q="10">10枚</button><button data-q="20">20枚</button><button data-q="50">50枚</button></div>
+    <button class="primary" id="startBtn">抽選券を受け取る</button>
+    <div class="note">※非公式シミュレーターです。実際の抽選確率を示すものではありません。</div>
+  </div>
+</section>
+<section id="draw" class="screen">
+  <div class="drawhead"><div class="counter"><span id="cur">1</span> / <span id="total">10</span> 枚目</div><div class="drawtitle">抽選券をめくる</div></div>
+  <div class="stage"><div class="sheet s3"></div><div class="sheet s2"></div><div class="ticketwrap" id="ticket" tabindex="0"><div class="face back"><div class="back-label">MONSTAGE</div><div class="back-tap">TAP TO OPEN</div></div><div class="face front"><div class="band" id="resultBand">抽選結果</div><div class="headline" id="headline"><span class="main" id="resultText">sorry</span></div><div class="dateband" id="dateBand"></div><div class="body"><div class="notes" id="notes"></div><div class="serial" id="serial"><div class="t">整理番号</div><div class="n" id="serialNo">157</div><div class="tot">/300</div></div></div><div class="code">BM</div></div></div></div>
+  <div class="hint live" id="hint">抽選券をタップしてめくる</div>
+  <button class="next" id="next">次の抽選券へ</button>
+</section>
+<section id="result" class="screen">
+  <div class="resultwrap"><h1>RESULT</h1><p class="sub">今回の抽選結果</p><div class="resultcard"><div class="stat"><span>挑戦</span><strong><span id="st">0</span>枚</strong></div><div class="stat"><span>公開リハーサル</span><strong><span id="sr">0</span>枚</strong></div><div class="stat"><span>お見送り会</span><strong><span id="so">0</span>枚</strong></div><div class="stat"><span>sorry</span><strong><span id="ss">0</span>枚</strong></div><div class="buttons"><button class="secondary" id="retry">もう一度</button><button class="secondary" id="share">結果をシェア</button></div></div></div>
+</section>
 <footer class="footer">MONSTAGE fan mini app<br>非公式ファンコンテンツ / 実際の抽選・当選確率とは関係ありません</footer>
 </main>
 <script>
 const PROBABILITY={sendoff:.01,rehearsal:.05,sorry:.94};
-const $=id=>document.getElementById(id);let total=10,current=1,flipped=false,busy=false,counts={sorry:0,rehearsal:0,sendoff:0};
-function show(s){[start,draw,result].forEach(x=>x.classList.remove('active'));s.classList.add('active');scrollTo(0,0)}
-function clamp(v){let n=parseInt(v||1);return Math.min(100,Math.max(1,isNaN(n)?1:n))}
-minus.onclick=()=>qty.value=clamp(+qty.value-1);plus.onclick=()=>qty.value=clamp(+qty.value+1);document.querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>qty.value=b.dataset.q);
-function dateText(){const d=new Date(),w=['日','月','火','水','木','金','土'];return `抽選日：${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日（${w[d.getDay()]}）`}
-function drawOne(){const r=Math.random();if(r<PROBABILITY.sendoff)return{type:'sendoff',text:'お見送り会<br>アタリ'};if(r<PROBABILITY.sendoff+PROBABILITY.rehearsal)return{type:'rehearsal',text:'公開リハーサル<br>アタリ'};return{type:'sorry',text:'sorry'}}
-function setFace(r){resultText.innerHTML=r.text;headline.className='headline'+(r.type==='sorry'?' sorry':'');dateBand.textContent=dateText();if(r.type==='sorry'){resultBand.textContent='抽選結果';serial.style.visibility='hidden';notes.innerHTML='残念ながら今回はハズレです。<br><br>次の抽選券をめくってください。'}else{resultBand.textContent=r.type==='sendoff'?'お見送り会 抽選券':'公開リハーサル 抽選券';serial.style.visibility='visible';serialNo.textContent=Math.floor(Math.random()*300)+1;notes.innerHTML='アタリ！<br><br>当選券は会場係員の案内に従ってご利用ください。<br><br>本シミュレーターは非公式ファンコンテンツです。'}}
-function reset(){busy=false;flipped=false;ticket.classList.remove('flipped');next.classList.remove('show');hint.textContent='抽選券をタップ';cur.textContent=current;serial.style.visibility='hidden'}
-function flip(){if(busy||flipped)return;busy=true;const r=drawOne();counts[r.type]++;setFace(r);requestAnimationFrame(()=>ticket.classList.add('flipped'));flipped=true;if(navigator.vibrate)navigator.vibrate(r.type==='sendoff'?[80,60,140]:r.type==='rehearsal'?80:30);setTimeout(()=>{hint.textContent=r.type==='sorry'?'sorry':r.type==='sendoff'?'お見送り会 アタリ！':'公開リハーサル アタリ！';next.textContent=current===total?'結果を見る':'次の抽選券へ';next.classList.add('show');busy=false},700)}
-ticket.onclick=flip;ticket.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();flip()}};
-startBtn.onclick=()=>{total=clamp(qty.value);current=1;counts={sorry:0,rehearsal:0,sendoff:0};$('total').textContent=total;reset();show(draw)};
-next.onclick=()=>{if(busy||!flipped)return;if(current>=total){st.textContent=total;sr.textContent=counts.rehearsal;so.textContent=counts.sendoff;ss.textContent=counts.sorry;show(result);return}current++;reset()};
-retry.onclick=()=>show(start);share.onclick=async()=>{const text=`BABYMONSTER 抽選シミュレーター\n🎫 ${total}枚挑戦\n🎥 公開リハーサル：${counts.rehearsal}枚\n👋 お見送り会：${counts.sendoff}枚\n🥲 sorry：${counts.sorry}枚\n\n#BABYMONSTER #MONSTAGE`;try{if(navigator.share)await navigator.share({title:'BABYMONSTER 抽選シミュレーター',text,url:location.href});else{await navigator.clipboard.writeText(text+'\n'+location.href);share.textContent='コピーしました';setTimeout(()=>share.textContent='結果をシェア',1500)}}catch(e){}};
+const $=id=>document.getElementById(id);
+let total=10,current=1,flipped=false,busy=false;
+let counts={sorry:0,rehearsal:0,sendoff:0};
+function show(s){[$("start"),$("draw"),$("result")].forEach(x=>x.classList.remove("active"));s.classList.add("active");window.scrollTo({top:0,behavior:"smooth"})}
+function clamp(v){let n=parseInt(v||1,10);return Math.min(100,Math.max(1,isNaN(n)?1:n))}
+$("minus").onclick=()=>$("qty").value=clamp(+$("qty").value-1);
+$("plus").onclick=()=>$("qty").value=clamp(+$("qty").value+1);
+document.querySelectorAll("[data-q]").forEach(b=>b.onclick=()=>$("qty").value=b.dataset.q);
+function dateText(){const d=new Date(),w=["日","月","火","水","木","金","土"];return `抽選日：${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日（${w[d.getDay()]}）`}
+function drawOne(){const r=Math.random();if(r<PROBABILITY.sendoff)return{type:"sendoff",text:"お見送り会<br>アタリ"};if(r<PROBABILITY.sendoff+PROBABILITY.rehearsal)return{type:"rehearsal",text:"公開リハーサル<br>アタリ"};return{type:"sorry",text:"sorry"}}
+function setFace(r){$("resultText").innerHTML=r.text;$("headline").className="headline"+(r.type==="sorry"?" sorry":"");$("dateBand").textContent=dateText();if(r.type==="sorry"){$("resultBand").textContent="抽選結果";$("serial").style.visibility="hidden";$("notes").innerHTML="残念ながら今回はハズレです。<br><br>次の抽選券をめくってください。"}else{$("resultBand").textContent=r.type==="sendoff"?"お見送り会 抽選券":"公開リハーサル 抽選券";$("serial").style.visibility="visible";$("serialNo").textContent=Math.floor(Math.random()*300)+1;$("notes").innerHTML="アタリ！<br><br>当選券は会場係員の案内に従ってご利用ください。<br><br>本シミュレーターは非公式ファンコンテンツです。"}}
+function reset(){busy=false;flipped=false;$("ticket").classList.remove("flipping","flipped");$("next").classList.remove("show");$("hint").classList.add("live");$("hint").textContent="抽選券をタップしてめくる";$("cur").textContent=current;$("serial").style.visibility="hidden"}
+function flip(){if(busy||flipped)return;busy=true;const r=drawOne();counts[r.type]++;setFace(r);const t=$("ticket");t.classList.remove("flipped");void t.offsetWidth;t.classList.add("flipping");if(navigator.vibrate)navigator.vibrate(r.type==="sendoff"?[65,45,110]:r.type==="rehearsal"?65:25);setTimeout(()=>{t.classList.remove("flipping");t.classList.add("flipped");flipped=true;$("hint").classList.remove("live");$("hint").textContent=r.type==="sorry"?"sorry":r.type==="sendoff"?"お見送り会 アタリ！":"公開リハーサル アタリ！";$("next").textContent=current===total?"結果を見る":"次の抽選券へ";$("next").classList.add("show");busy=false},1020)}
+$("ticket").onclick=flip;$("ticket").onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();flip()}};
+$("startBtn").onclick=()=>{total=clamp($("qty").value);current=1;counts={sorry:0,rehearsal:0,sendoff:0};$("total").textContent=total;reset();show($("draw"))};
+$("next").onclick=()=>{if(busy||!flipped)return;if(current>=total){$("st").textContent=total;$("sr").textContent=counts.rehearsal;$("so").textContent=counts.sendoff;$("ss").textContent=counts.sorry;show($("result"));return}current++;reset()};
+$("retry").onclick=()=>show($("start"));
+$("share").onclick=async()=>{const text=`BABYMONSTER 抽選シミュレーター\n🎫 ${total}枚挑戦\n🎥 公開リハーサル：${counts.rehearsal}枚\n👋 お見送り会：${counts.sendoff}枚\n🥲 sorry：${counts.sorry}枚\n\n#BABYMONSTER #MONSTAGE`;try{if(navigator.share){await navigator.share({title:"BABYMONSTER 抽選シミュレーター",text,url:location.href})}else{await navigator.clipboard.writeText(text+"\n"+location.href);$("share").textContent="コピーしました";setTimeout(()=>$("share").textContent="結果をシェア",1500)}}catch(e){}};
 </script>
 </body>
 </html>
