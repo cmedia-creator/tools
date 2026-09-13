@@ -45,22 +45,17 @@
 <button id="drawBtn" class="primary" disabled>DRAW A TICKET / くじを引く</button>
 <p class="note">各メンバー 景品がなくなり次第終了</p><button id="resetBtn" class="admin-reset" type="button">在庫をリセット</button>
 </section>
-<section id="drawScreen" class="screen">
-<div class="top-mini"><div class="mini-title">MONST<span>A</span>GE</div><div class="mini-sub">ONLINE KUJI</div></div>
-<div class="selected-member">SELECTED / <b id="drawMember"></b></div>
-<div class="ticket-wrap"><div id="ticket" class="ticket"><div class="face front"><div class="ticket-logo"><div class="big">MONST<span>A</span>GE</div><div class="small">ONLINE KUJI</div></div><div class="open-hint">TAP TO OPEN</div><div class="corner"><span>OPEN</span></div></div><div class="face back"><div class="tap"><strong>OPEN</strong><span>RESULT</span></div></div></div></div>
-</section>
-<section id="resultScreen" class="screen">
-<div class="result-card"><div class="result-brand">MONST<span>A</span>GE</div><div class="result-sub">ONLINE KUJI</div><div class="redline"></div><div id="grade" class="prize-grade"></div><div id="prizeName" class="prize-name"></div><div class="photo"><img id="prizePhoto"></div><div class="member-result">MEMBER / <b id="resultMember"></b></div><div class="again"><button id="homeBtn">BACK TO TOP / トップへ戻る</button></div><div id="stockLine" class="stockline"></div></div>
-</section>
+<section id="drawScreen" class="screen"><div class="top-mini"><div class="mini-title">MONST<span>A</span>GE</div><div class="mini-sub">ONLINE KUJI</div></div><div class="selected-member">SELECTED / <b id="drawMember"></b></div><div class="ticket-wrap"><div id="ticket" class="ticket"><div class="face front"><div class="ticket-logo"><div class="big">MONST<span>A</span>GE</div><div class="small">ONLINE KUJI</div></div><div class="open-hint">TAP TO OPEN</div><div class="corner"><span>OPEN</span></div></div><div class="face back"><div class="tap"><strong>OPEN</strong><span>RESULT</span></div></div></div></div></section>
+<section id="resultScreen" class="screen"><div class="result-card"><div class="result-brand">MONST<span>A</span>GE</div><div class="result-sub">ONLINE KUJI</div><div class="redline"></div><div id="grade" class="prize-grade"></div><div id="prizeName" class="prize-name"></div><div class="photo"><img id="prizePhoto" alt="景品写真"></div><div class="member-result">MEMBER / <b id="resultMember"></b></div><div class="again"><button id="homeBtn">BACK TO TOP / トップへ戻る</button></div><div id="stockLine" class="stockline"></div></div></section>
 </div>
 <script>
-const PHOTO_FILES={"A賞":"prize-a.b64","B賞":"prize-b.b64","C賞":"prize-c.b64","D賞":"prize-d.b64"};
+const RAW_BASE="https://raw.githubusercontent.com/cmedia-creator/tools/main/power/online-kuji/";
+const PHOTO_FILES={"A賞":RAW_BASE+"prize-a.b64?v=20260914","B賞":RAW_BASE+"prize-b.b64?v=20260914","C賞":RAW_BASE+"prize-c.b64?v=20260914","D賞":RAW_BASE+"prize-d.b64?v=20260914"};
 const PHOTO_CACHE={};
-async function prizePhotoData(grade){if(PHOTO_CACHE[grade])return PHOTO_CACHE[grade];const r=await fetch(PHOTO_FILES[grade],{cache:"force-cache"});if(!r.ok)throw new Error("image load failed");const b64=(await r.text()).trim();return PHOTO_CACHE[grade]="data:image/jpeg;base64,"+b64}
+async function prizePhotoData(grade){if(PHOTO_CACHE[grade])return PHOTO_CACHE[grade];const r=await fetch(PHOTO_FILES[grade],{cache:"no-store"});if(!r.ok)throw new Error("image load failed");const b64=(await r.text()).replace(/\s/g,"");if(!b64.startsWith("/9j/"))throw new Error("invalid image data");return PHOTO_CACHE[grade]="data:image/jpeg;base64,"+b64}
 const MEMBERS=["RUKA","PHARITA","ASA","AHYEON","RAMI","RORA","CHIQUITA"];
 const PRIZES=[{grade:"A賞",name:"MONSTAGEオリジナルミニトレカ",count:1},{grade:"B賞",name:"IDフォトチャーム",count:5},{grade:"C賞",name:"メンバーステッカー",count:2},{grade:"D賞",name:"全メンバーステッカー",count:4}];
-const KEY="monstage_online_kuji_v1"; let selected=null,locked=false;
+const KEY="monstage_online_kuji_v1";let selected=null,locked=false;
 function initialStocks(){const o={};MEMBERS.forEach(m=>o[m]=Object.fromEntries(PRIZES.map(p=>[p.grade,p.count])));return o}
 function loadStocks(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&MEMBERS.every(m=>s[m]&&typeof s[m]==="object"))return s}catch(e){}const s=initialStocks();localStorage.setItem(KEY,JSON.stringify(s));return s}
 function saveStocks(s){localStorage.setItem(KEY,JSON.stringify(s))}
@@ -69,7 +64,7 @@ function show(id){document.querySelectorAll(".screen").forEach(x=>x.classList.re
 function renderMembers(){const s=loadStocks(),buttons=[...document.querySelectorAll(".member")];buttons.forEach((b,i)=>{const m=MEMBERS[i],left=remaining(m,s);b.disabled=left===0;b.classList.toggle("selected",selected===m);b.querySelector(".remain").textContent=left===0?"景品終了":"REMAINING "+left+" / 残り "+left+"枚";b.onclick=()=>{if(left===0)return;selected=m;renderMembers();document.getElementById("drawBtn").disabled=false}})}
 function drawPrize(m){const s=loadStocks(),bag=[];PRIZES.forEach(p=>{for(let i=0;i<(s[m][p.grade]||0);i++)bag.push(p)});if(!bag.length)return null;const p=bag[Math.floor(Math.random()*bag.length)];s[m][p.grade]--;saveStocks(s);return p}
 document.getElementById("drawBtn").onclick=()=>{if(!selected)return;locked=false;document.getElementById("drawMember").textContent=selected;document.getElementById("ticket").classList.remove("flipped");show("drawScreen")};
-document.getElementById("ticket").onclick=()=>{if(locked)return;locked=true;const p=drawPrize(selected);if(!p){selected=null;renderMembers();show("homeScreen");return}document.getElementById("ticket").classList.add("flipped");setTimeout(()=>{document.getElementById("grade").textContent=p.grade;document.getElementById("prizeName").textContent=p.name;const img=document.getElementById("prizePhoto");img.removeAttribute("src");prizePhotoData(p.grade).then(src=>img.src=src).catch(()=>img.alt="景品画像を読み込めませんでした");document.getElementById("resultMember").textContent=selected;document.getElementById("stockLine").textContent=selected+" / 残り景品 "+remaining(selected)+"枚";show("resultScreen")},780)};
+document.getElementById("ticket").onclick=()=>{if(locked)return;locked=true;const p=drawPrize(selected);if(!p){selected=null;renderMembers();show("homeScreen");return}document.getElementById("ticket").classList.add("flipped");setTimeout(async()=>{document.getElementById("grade").textContent=p.grade;document.getElementById("prizeName").textContent=p.name;const img=document.getElementById("prizePhoto");img.removeAttribute("src");try{img.src=await prizePhotoData(p.grade)}catch(e){console.error(e);img.alt="景品画像を読み込めませんでした"}document.getElementById("resultMember").textContent=selected;document.getElementById("stockLine").textContent=selected+" / 残り景品 "+remaining(selected)+"枚";show("resultScreen")},780)};
 document.getElementById("homeBtn").onclick=()=>{selected=null;document.getElementById("drawBtn").disabled=true;renderMembers();show("homeScreen")};
 document.getElementById("resetBtn").onclick=()=>{if(!confirm("全メンバーの在庫を初期状態（各12枚）に戻します。よろしいですか？"))return;saveStocks(initialStocks());selected=null;document.getElementById("drawBtn").disabled=true;renderMembers();alert("在庫を初期状態に戻しました")};
 renderMembers();
