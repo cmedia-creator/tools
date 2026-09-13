@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>MONSTAGE オンラインくじ</title>
+<style>
+:root{--bg:#050505;--panel:#0c0c0f;--red:#ff1525;--red2:#c40013;--text:#fff;--muted:#aaa;--line:#2b2b31}
+*{box-sizing:border-box}html,body{margin:0;background:#000;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP",sans-serif;min-height:100%;}
+body{display:flex;justify-content:center}.app{width:min(100%,460px);min-height:100dvh;background:radial-gradient(circle at 50% 9%,#180208 0,#080808 30%,#020202 68%);position:relative;overflow:hidden;padding:28px 20px 38px}.app:before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent 0 46%,rgba(255,255,255,.025) 47%,transparent 48%);pointer-events:none}.screen{display:none;position:relative;z-index:1}.screen.active{display:block}.brand{text-align:center;margin-top:8px}.hex{width:118px;height:118px;margin:0 auto 14px;display:grid;place-items:center;position:relative;filter:drop-shadow(0 0 14px rgba(255,21,37,.22))}.hex:before,.hex:after{content:"";position:absolute;inset:8px;background:#131317;clip-path:polygon(25% 6.7%,75% 6.7%,100% 50%,75% 93.3%,25% 93.3%,0 50%)}.hex:before{background:linear-gradient(135deg,#dcdcdc 0 24%,#70000c 42%,#ff1525 62%,#f1f1f1 100%);inset:0}.hex:after{inset:4px;background:#08080a}.hex span{z-index:2;font-family:Georgia,serif;font-size:64px;font-weight:700;background:linear-gradient(#fff,#aaa);-webkit-background-clip:text;color:transparent;line-height:1}.tinylogo{font-size:12px;letter-spacing:.62em;margin-right:-.62em;color:#ddd}.tinylogo .a{color:var(--red)}
+h1{font-size:42px;line-height:1;margin:16px 0 10px;letter-spacing:.03em;color:var(--red);font-weight:900}.pill{display:inline-block;background:linear-gradient(180deg,#ff2432,#e90018);padding:13px 38px;border-radius:14px;font-size:22px;font-weight:800;box-shadow:0 8px 24px rgba(255,21,37,.13)}.thanks{margin:19px auto 16px;color:#f35b63;font-family:Georgia,"Noto Serif JP",serif;font-size:14px;line-height:1.6}.notice{margin:18px 0 12px;color:#ddd;font-size:13px}.notice strong{color:#fff}.members{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0 22px}.member{appearance:none;border:1px solid #35353a;background:linear-gradient(#111116,#09090c);color:white;padding:15px 10px;border-radius:13px;text-align:left;min-height:72px;position:relative;transition:.15s;box-shadow:inset 0 0 0 1px rgba(255,255,255,.02)}.member:active:not(:disabled),.member.selected{border-color:var(--red);box-shadow:0 0 0 1px var(--red),0 0 18px rgba(255,21,37,.22)}.member .n{font-size:12px;color:#888;margin-right:5px}.member .name{font-size:17px;font-weight:800;letter-spacing:.03em}.member .stock{display:block;font-size:11px;color:#9f9f9f;margin-top:7px}.member.selected .stock{color:#ff6b75}.member:disabled{opacity:.38;cursor:not-allowed}.sold{display:none;position:absolute;right:8px;top:8px;font-size:9px;background:#555;color:#fff;border-radius:20px;padding:4px 7px;font-weight:800}.member:disabled .sold{display:block}.cta{width:100%;border:0;border-radius:14px;background:linear-gradient(180deg,#ff1b2c,#db0016);color:#fff;font-weight:900;font-size:23px;padding:18px 16px;box-shadow:0 12px 36px rgba(255,21,37,.18)}.cta:disabled{filter:grayscale(1);opacity:.35}.footnote{text-align:center;color:#67676d;font-size:10px;margin-top:14px;line-height:1.6}
+.topbar{display:flex;align-items:center;gap:12px;margin-bottom:18px}.back{border:1px solid #333;background:#101014;color:#fff;border-radius:10px;padding:9px 11px;font-size:16px}.titlewrap{flex:1}.titlewrap b{display:block;color:var(--red);font-size:21px}.titlewrap span{font-size:11px;color:#8c8c92}.ticket-wrap{display:grid;place-items:center;min-height:73dvh}.ticket{width:88%;aspect-ratio:0.58;background:linear-gradient(180deg,#0b0b0d,#151519);border:2px solid #313139;position:relative;border-radius:18px;box-shadow:0 28px 80px rgba(0,0,0,.65),0 0 0 1px rgba(255,21,37,.12) inset;overflow:hidden}.ticket:before{content:"";position:absolute;inset:16px;border:1px solid #3a3a42;border-radius:11px}.ticket:after{content:"OPEN";position:absolute;right:7px;bottom:54px;transform:rotate(-45deg);letter-spacing:.16em;color:#fff;font-weight:800;font-size:12px}.corner{position:absolute;right:0;bottom:0;width:88px;height:88px;background:var(--red);clip-path:polygon(100% 0,0 100%,100% 100%)}.ticket-title{position:absolute;top:25%;left:0;right:0;text-align:center}.ticket-title .main{font-size:38px;font-weight:950;color:var(--red)}.ticket-title .sub{display:inline-block;margin-top:19px;background:var(--red);border-radius:11px;padding:10px 25px;font-size:18px;font-weight:800}.tap{position:absolute;left:0;right:0;bottom:20%;text-align:center;color:#c7c7cb;font-size:13px;animation:pulse 1.35s infinite}@keyframes pulse{50%{opacity:.35}}.peel{position:absolute;inset:0;border:0;background:transparent;color:transparent;cursor:pointer}
+.result{text-align:center;padding-top:3px}.award{margin:34px 0 8px;font-size:56px;line-height:1;font-weight:950;color:#fff;text-shadow:0 0 0 #fff,0 0 24px rgba(255,21,37,.3)}.award small{font-size:.42em;margin-left:4px}.winner{color:#ff6873;font-size:13px;letter-spacing:.08em;margin-bottom:18px}.prizebox{width:78%;aspect-ratio:1;margin:0 auto 18px;background:white;border:11px solid var(--red);box-shadow:0 0 0 2px #444,0 20px 45px rgba(0,0,0,.45);display:grid;place-items:center;position:relative}.prizebox span{color:#cfcfd2;font-size:13px;letter-spacing:.14em}.desc{font-size:18px;font-weight:800;margin:8px 0 6px}.remain{font-size:11px;color:#898990;margin-bottom:22px}.result .cta{font-size:18px;padding:15px}.secondary{margin-top:10px;width:100%;border:1px solid #3b3b41;background:#101014;color:#ddd;border-radius:12px;padding:13px;font-weight:700}.inventory-strip{margin-top:22px;padding:13px;border:1px solid #232329;background:#09090b;border-radius:12px;text-align:left}.inventory-strip b{font-size:12px}.inventory-strip div{font-size:10px;color:#777;line-height:1.7;margin-top:5px}
+@media (max-height:760px){.hex{width:88px;height:88px}.hex span{font-size:48px}h1{font-size:34px}.thanks{margin:12px auto}.member{min-height:62px;padding:12px 9px}.ticket-wrap{min-height:67dvh}.award{margin-top:24px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <section id="home" class="screen active">
+    <div class="brand">
+      <div class="hex"><span>M</span></div>
+      <div class="tinylogo">MONST<span class="a">A</span>GE</div>
+      <h1>MONSTAGE</h1>
+      <div class="pill">オンラインくじ</div>
+      <div class="thanks">MONSTAGEをご登録いただき<br>ありがとうございます</div>
+    </div>
+    <div class="notice"><strong>推しを選択してください</strong><br>景品はメンバーごとに数に限りがあります。</div>
+    <div class="members" id="members"></div>
+    <button id="drawBtn" class="cta" disabled>くじを引く</button>
+    <div class="footnote">各メンバー：A賞1 / B賞5 / C賞2 / D賞4<br>残数が0になると自動でSOLD OUTになります</div>
+  </section>
+
+  <section id="peel" class="screen">
+    <div class="topbar"><button class="back" data-back>‹</button><div class="titlewrap"><b>MONSTAGE</b><span id="pickedLabel">オンラインくじ</span></div></div>
+    <div class="ticket-wrap">
+      <div class="ticket">
+        <div class="ticket-title"><div class="main">MONSTAGE</div><div class="sub">オンラインくじ</div></div>
+        <div class="tap">タップしてくじをめくる</div><div class="corner"></div>
+        <button id="peelBtn" class="peel" aria-label="くじをめくる">OPEN</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="result" class="screen result">
+    <div class="topbar"><button class="back" data-home>‹</button><div class="titlewrap"><b>MONSTAGE</b><span>オンラインくじ 結果</span></div></div>
+    <div class="award"><span id="rank">B</span><small>賞</small></div>
+    <div id="winner" class="winner">RORA</div>
+    <div class="prizebox"><span>景品画像をここに追加</span></div>
+    <div id="prizeName" class="desc">オリジナル景品</div>
+    <div id="remain" class="remain"></div>
+    <button class="cta" data-home>トップへ戻る</button>
+    <button class="secondary" id="resetDemo">プレビュー用：在庫を初期化</button>
+    <div class="inventory-strip"><b>抽選在庫</b><div>A賞 1枚　B賞 5枚　C賞 2枚　D賞 4枚<br>当たった賞から1つずつ減ります。</div></div>
+  </section>
+</div>
+<script>
+const MEMBERS=['RUKA','PHARITA','ASA','AHYEON','RAMI','RORA','CHIQUITA'];
+const INITIAL={A:1,B:5,C:2,D:4};
+let selected=null, pendingPrize=null;
+const key=m=>`monstage-kuji-${m}`;
+function load(m){try{return JSON.parse(localStorage.getItem(key(m)))||{...INITIAL}}catch{return {...INITIAL}}}
+function save(m,v){localStorage.setItem(key(m),JSON.stringify(v))}
+function total(s){return Object.values(s).reduce((a,b)=>a+b,0)}
+function renderMembers(){
+ const root=document.getElementById('members'); root.innerHTML='';
+ MEMBERS.forEach((m,i)=>{const s=load(m),left=total(s);const b=document.createElement('button');b.className='member'+(selected===m?' selected':'');b.disabled=left===0;b.innerHTML=`<span class="n">${String(i+1).padStart(2,'0')}</span><span class="name">${m}</span><span class="stock">残り ${left} / 12</span><span class="sold">SOLD OUT</span>`;b.onclick=()=>{selected=m;renderMembers();document.getElementById('drawBtn').disabled=false};root.appendChild(b)});
+ if(selected&&total(load(selected))===0){selected=null;document.getElementById('drawBtn').disabled=true}
+}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0)}
+function pickPrize(m){const s=load(m),pool=[];Object.entries(s).forEach(([rank,n])=>{for(let i=0;i<n;i++)pool.push(rank)});if(!pool.length)return null;const forced=new URLSearchParams(location.search).get('prize');if(forced&&s[forced]>0)return forced;return pool[Math.floor(Math.random()*pool.length)]}
+document.getElementById('drawBtn').onclick=()=>{if(!selected)return;pendingPrize=pickPrize(selected);if(!pendingPrize){renderMembers();return}document.getElementById('pickedLabel').textContent=`${selected} のくじ`;show('peel')};
+document.getElementById('peelBtn').onclick=()=>{if(!selected||!pendingPrize)return;const s=load(selected);s[pendingPrize]--;save(selected,s);document.getElementById('rank').textContent=pendingPrize;document.getElementById('winner').textContent=selected;document.getElementById('prizeName').textContent=`${pendingPrize}賞 オリジナル景品`;document.getElementById('remain').textContent=`${selected} の残りくじ：${total(s)} / 12`;show('result')};
+document.querySelectorAll('[data-home]').forEach(b=>b.onclick=()=>{pendingPrize=null;selected=null;renderMembers();document.getElementById('drawBtn').disabled=true;show('home')});
+document.querySelectorAll('[data-back]').forEach(b=>b.onclick=()=>{pendingPrize=null;show('home')});
+document.getElementById('resetDemo').onclick=()=>{MEMBERS.forEach(m=>localStorage.removeItem(key(m)));selected=null;pendingPrize=null;renderMembers();document.getElementById('drawBtn').disabled=true;show('home')};
+renderMembers();
+</script>
+</body></html>
