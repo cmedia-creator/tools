@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>MONSTAGE ONLINE KUJI</title>
+<title>MONSTAGE OFFLINE KUJI</title>
 <style>
 :root{--red:#f20b13;--line:#282828}
 *{box-sizing:border-box}html,body{margin:0;background:#000;color:#fff;font-family:Arial,"Helvetica Neue","Noto Sans JP",sans-serif}body{min-height:100svh}button{font:inherit}
@@ -30,28 +30,28 @@
 <body>
 <div class="app">
 <section id="homeScreen" class="screen active">
-<div class="brand"><div class="eyebrow">MONSTAGE PRESENTS</div><h1>MONST<span>A</span>GE</h1><div class="submark">OFFICIAL FAN EVENT</div><div class="kuji-title">ONLINE KUJI / オンラインくじ</div></div>
+<div class="brand"><div class="eyebrow">MONSTAGE PRESENTS</div><h1>MONST<span>A</span>GE</h1><div class="submark">OFFICIAL FAN EVENT</div><div class="kuji-title">OFFLINE KUJI / オフラインくじ</div></div>
 <div class="thanks">MONSTAGEをご登録いただきありがとうございます</div>
 <div class="label">SELECT YOUR MEMBER / 推しを選択</div>
 <div id="memberList" class="members">
-<button class="member" data-member="RUKA"><span class="num">01</span><span class="name">RUKA</span><span class="remain">REMAINING 12 / 残り 12枚</span></button>
-<button class="member" data-member="PHARITA"><span class="num">02</span><span class="name">PHARITA</span><span class="remain">REMAINING 12 / 残り 12枚</span></button>
-<button class="member" data-member="ASA"><span class="num">03</span><span class="name">ASA</span><span class="remain">REMAINING 12 / 残り 12枚</span></button>
-<button class="member" data-member="AHYEON"><span class="num">04</span><span class="name">AHYEON</span><span class="remain">REMAINING 12 / 残り 12枚</span></button>
-<button class="member" data-member="RAMI"><span class="num">05</span><span class="name">RAMI</span><span class="remain">REMAINING 12 / 残り 12枚</span></button>
-<button class="member" data-member="RORA"><span class="num">06</span><span class="name">RORA</span><span class="remain">REMAINING 12 / 残り 12枚</span></button>
-<button class="member" data-member="CHIQUITA"><span class="num">07</span><span class="name">CHIQUITA</span><span class="remain">REMAINING 12 / 残り 12枚</span></button>
+<button class="member" data-member="RUKA"><span class="num">01</span><span class="name">RUKA</span><span class="remain">REMAINING 14 / 残り 14枚</span></button>
+<button class="member" data-member="PHARITA"><span class="num">02</span><span class="name">PHARITA</span><span class="remain">REMAINING 14 / 残り 14枚</span></button>
+<button class="member" data-member="ASA"><span class="num">03</span><span class="name">ASA</span><span class="remain">REMAINING 14 / 残り 14枚</span></button>
+<button class="member" data-member="AHYEON"><span class="num">04</span><span class="name">AHYEON</span><span class="remain">REMAINING 14 / 残り 14枚</span></button>
+<button class="member" data-member="RAMI"><span class="num">05</span><span class="name">RAMI</span><span class="remain">REMAINING 14 / 残り 14枚</span></button>
+<button class="member" data-member="RORA"><span class="num">06</span><span class="name">RORA</span><span class="remain">REMAINING 14 / 残り 14枚</span></button>
+<button class="member" data-member="CHIQUITA"><span class="num">07</span><span class="name">CHIQUITA</span><span class="remain">REMAINING 14 / 残り 14枚</span></button>
 </div>
 <button id="drawBtn" class="primary" disabled>DRAW A TICKET / くじを引く</button>
 <p class="note">各メンバー 景品がなくなり次第終了</p><button id="resetBtn" class="admin-reset" type="button">在庫をリセット</button>
 </section>
-<section id="drawScreen" class="screen"><div class="top-mini"><div class="mini-title">MONST<span>A</span>GE</div><div class="mini-sub">ONLINE KUJI</div></div><div class="selected-member">SELECTED / <b id="drawMember"></b></div><div class="ticket-wrap"><div id="ticket" class="ticket"><div class="face front"><div class="ticket-logo"><div class="big">MONST<span>A</span>GE</div><div class="small">ONLINE KUJI</div></div><div class="open-hint">TAP TO OPEN</div><div class="corner"><span>OPEN</span></div></div><div class="face back"><div class="tap"><strong>OPEN</strong><span>RESULT</span></div></div></div></div></section>
-<section id="resultScreen" class="screen"><div class="result-card"><div class="result-brand">MONST<span>A</span>GE</div><div class="result-sub">ONLINE KUJI</div><div class="redline"></div><div id="grade" class="prize-grade"></div><div id="prizeName" class="prize-name"></div><div class="photo"><img id="prizePhoto" alt="景品写真"></div><div class="member-result">MEMBER / <b id="resultMember"></b></div><div class="again"><button id="homeBtn">BACK TO TOP / トップへ戻る</button></div><div id="stockLine" class="stockline"></div></div></section>
+<section id="drawScreen" class="screen"><div class="top-mini"><div class="mini-title">MONST<span>A</span>GE</div><div class="mini-sub">OFFLINE KUJI</div></div><div class="selected-member">SELECTED / <b id="drawMember"></b></div><div class="ticket-wrap"><div id="ticket" class="ticket"><div class="face front"><div class="ticket-logo"><div class="big">MONST<span>A</span>GE</div><div class="small">OFFLINE KUJI</div></div><div class="open-hint">TAP TO OPEN</div><div class="corner"><span>OPEN</span></div></div><div class="face back"><div class="tap"><strong>OPEN</strong><span>RESULT</span></div></div></div></div></section>
+<section id="resultScreen" class="screen"><div class="result-card"><div class="result-brand">MONST<span>A</span>GE</div><div class="result-sub">OFFLINE KUJI</div><div class="redline"></div><div id="grade" class="prize-grade"></div><div id="prizeName" class="prize-name"></div><div class="photo"><img id="prizePhoto" alt="景品写真"></div><div class="member-result">MEMBER / <b id="resultMember"></b></div><div class="again"><button id="homeBtn">BACK TO TOP / トップへ戻る</button></div><div id="stockLine" class="stockline"></div></div></section>
 </div>
 <script>
 const PHOTOS={"A賞":"prize-a.jpg?v=20260914b","B賞":"prize-b.jpg?v=20260914b","C賞":"prize-c.jpg?v=20260914b","D賞":"prize-d.jpg?v=20260914b"};
 const MEMBERS=["RUKA","PHARITA","ASA","AHYEON","RAMI","RORA","CHIQUITA"];
-const PRIZES=[{grade:"A賞",name:"MONSTAGEオリジナルミニトレカ",count:1},{grade:"B賞",name:"IDフォトチャーム",count:5},{grade:"C賞",name:"メンバーステッカー",count:2},{grade:"D賞",name:"全メンバーステッカー",count:4}];
+const PRIZES=[{grade:"A賞",name:"MONSTAGEオリジナルミニトレカ",count:1},{grade:"B賞",name:"IDフォトチャーム",count:10},{grade:"C賞",name:"メンバーステッカー",count:2},{grade:"D賞",name:"全メンバーステッカー",count:1}];
 const KEY="monstage_online_kuji_v1";let selected=null,locked=false;
 function initialStocks(){const o={};MEMBERS.forEach(m=>o[m]=Object.fromEntries(PRIZES.map(p=>[p.grade,p.count])));return o}
 function loadStocks(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&MEMBERS.every(m=>s[m]&&typeof s[m]==="object"))return s}catch(e){}const s=initialStocks();localStorage.setItem(KEY,JSON.stringify(s));return s}
@@ -63,7 +63,7 @@ function drawPrize(m){const s=loadStocks(),bag=[];PRIZES.forEach(p=>{for(let i=0
 document.getElementById("drawBtn").onclick=()=>{if(!selected)return;locked=false;document.getElementById("drawMember").textContent=selected;document.getElementById("ticket").classList.remove("flipped");show("drawScreen")};
 document.getElementById("ticket").onclick=()=>{if(locked)return;locked=true;const p=drawPrize(selected);if(!p){selected=null;renderMembers();show("homeScreen");return}document.getElementById("ticket").classList.add("flipped");setTimeout(()=>{document.getElementById("grade").textContent=p.grade;document.getElementById("prizeName").textContent=p.name;const img=document.getElementById("prizePhoto");img.onerror=()=>{img.alt="景品画像を読み込めませんでした"};img.src=PHOTOS[p.grade];document.getElementById("resultMember").textContent=selected;document.getElementById("stockLine").textContent=selected+" / 残り景品 "+remaining(selected)+"枚";show("resultScreen")},780)};
 document.getElementById("homeBtn").onclick=()=>{selected=null;document.getElementById("drawBtn").disabled=true;renderMembers();show("homeScreen")};
-document.getElementById("resetBtn").onclick=()=>{if(!confirm("全メンバーの在庫を初期状態（各12枚）に戻します。よろしいですか？"))return;saveStocks(initialStocks());selected=null;document.getElementById("drawBtn").disabled=true;renderMembers();alert("在庫を初期状態に戻しました")};
+document.getElementById("resetBtn").onclick=()=>{if(!confirm("全メンバーの在庫を初期状態（各14枚）に戻します。よろしいですか？"))return;saveStocks(initialStocks());selected=null;document.getElementById("drawBtn").disabled=true;renderMembers();alert("在庫を初期状態に戻しました")};
 renderMembers();
 </script>
 </body></html>
