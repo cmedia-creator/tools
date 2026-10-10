@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BABYMONSTERのトレカを探す｜トレカリサーチ</title>
+<meta name="description" content="BABYMONSTERの欲しいトレカが見つからないときに。メンバー・シリーズ・店舗から、表記揺れや略称も含めたメルカリ検索キーワードを無料で作成。ログイン不要。">
+<meta name="theme-color" content="#f6f4fa"><meta property="og:title" content="そのトレカ、別の名前で出ているかも。｜トレカリサーチ"><meta property="og:description" content="BABYMONSTERのトレカ検索語を3段階で作成。無料・ログイン不要。"><meta property="og:type" content="website">
+<link rel="canonical" href="https://cmedia-creator.github.io/tools/toreca/"><link rel="stylesheet" href="style.css">
+<script type="module" src="app.js"></script>
+</head>
+<body>
+<header class="site-header"><a class="brand" href="./"><span class="mark" aria-hidden="true">TR</span>トレカリサーチ<span class="brand-note">SEARCH TOOL</span></a><a class="quiet-link" href="#guide">使い方 ↗</a></header>
+<main>
+<section class="hero"><div class="eyebrow"><span class="dot"></span> BABYMONSTER · 非公式の検索サポート</div><h1>そのトレカ、<br><span>別の名前で</span>出ているかも。</h1><p class="hero-copy">「チキータ」と「チキタ」。店舗名あり、なし。<br>欲しい1枚に近づく検索語を、順番に作ります。</p><div class="pills"><span>無料</span><span>ログイン不要</span><span>スマホ対応</span></div></section>
+<div class="workspace">
+<section class="search-panel" aria-labelledby="form-title"><div class="panel-heading"><span class="eyebrow">01 / YOUR CARD</span><span class="small-label">分かるところだけでOK</span></div><h2 id="form-title">探したいトレカは？</h2>
+<form id="search-form"><label for="member">メンバー</label><select id="member" name="member" disabled><option value="">読み込み中…</option></select>
+<div class="two-columns"><div><label for="release">シリーズ / 曲 / ツアー</label><select id="release" name="release" disabled><option value="">指定なし</option></select></div><div><label for="store">店舗 / 配布元</label><select id="store" name="store" disabled><option value="">指定なし</option></select></div></div>
+<label for="type">特典の種類</label><select id="type" name="type" disabled><option value="">指定なし</option></select>
+<details id="more-fields"><summary>会場・絵柄などを追加する <span>＋</span></summary><div class="detail-fields"><div class="two-columns"><div><label for="venue">会場</label><select id="venue" name="venue"><option value="">指定なし</option></select></div><div><label for="version">絵柄 / バージョン</label><input id="version" name="version" list="versions" maxlength="160" placeholder="例：くま、K ver"><datalist id="versions"></datalist></div></div><label for="region">地域</label><select id="region" name="region"><option value="">指定なし</option></select><label for="want">探す単位</label><select id="want" name="want"><option value="">指定なし</option><option>単品</option><option>セット</option></select></div></details>
+<label for="freeform">手がかりを入力 <span class="optional">任意</span></label><input id="freeform" name="freeform" maxlength="300" placeholder="例：ラミ DRIP ktown4u">
+<p class="field-help">入力した言葉を辞書と照合します。分からない語は検索語に反映されない場合があります。</p>
+<button id="search-button" class="primary-button" disabled>検索キーワードを作る <span aria-hidden="true">↗</span></button><p id="load-status" role="status" class="field-help">検索辞書を読み込んでいます。</p>
+</form><div class="examples"><span>まずは試してみる</span><button type="button" data-example="rami">ラミ × DRIP</button><button type="button" data-example="chiquita">チキータ</button><button type="button" data-example="rora">ローラ × MAKESTAR</button></div>
+</section>
+<section class="results-panel" id="results" aria-labelledby="result-title"><div class="panel-heading"><span class="eyebrow">02 / SEARCH ROUTE</span><span class="small-label">メルカリで探す</span></div><h2 id="result-title">検索は、少しずつ広げよう。</h2><div id="result-content"><div class="empty-state"><div class="card-motif" aria-hidden="true"><i></i><i></i><i></i></div><p>条件を選ぶと、ここに<br>検索キーワードが表示されます。</p><ol class="route-preview"><li><b>01</b><div><strong>まずは絞って探す</strong><span>メンバー・シリーズなど、分かる情報で。</span></div></li><li><b>02</b><div><strong>表記を変えて探す</strong><span>略称や別表記、情報の抜けをカバー。</span></div></li><li><b>03</b><div><strong>条件を減らして探す</strong><span>最後は広く。画像を見て確かめる。</span></div></li></ol></div></div></section>
+</div>
+<section class="guide" id="guide"><div><span class="eyebrow">HOW TO SEARCH</span><h2>見つからないときは、<br>言葉を足すより、引いてみる。</h2></div><div class="guide-copy"><p>出品名には、店舗名やシリーズ名が書かれていないこともあります。まずSTEP 1から試し、見つからなければSTEP 2、3へ進んでください。</p><p>同じ条件でも表記によって見つかる出品が変わります。気になるカードは、メルカリの商品ページで画像・状態・付属品を確認しましょう。</p><a href="https://note.com/kpop_merucari" target="_blank" rel="noopener noreferrer">トレカの探し方をもっと読む ↗</a></div></section>
+<section class="about"><details><summary>このツールについて・リンクとプライバシー</summary><p>トレカリサーチが運営する非公式の検索補助ツールです。BABYMONSTER、所属事務所、メルカリとは関係ありません。検索語の生成を補助するもので、カードの存在・在庫・価格・真贋を保証しません。</p><p>検索はお使いのブラウザ内で処理します。このツールから検索内容やクリック履歴を収集・送信しません。外部サイトへ移動したあとは、そのサイトの規約・プライバシーポリシーが適用されます。</p><p id="link-disclosure">現在のメルカリへのリンクは通常の検索リンクです。アフィリエイトリンクを使用するときは、ボタンに「PR」と表示します。そのリンク経由の購入により運営者に報酬が入る場合があります。</p><p>画像認識、出品情報の取得、価格監視は行いません。生成した検索語は、必ずご自身で結果を確認してください。</p></details></section>
+</main><footer><span>トレカリサーチ</span><span id="data-date">BABYMONSTER SEARCH TOOL</span></footer>
+<noscript><p class="noscript">この検索ツールにはJavaScriptが必要です。ブラウザの設定で有効にしてください。</p></noscript>
+</body></html>
