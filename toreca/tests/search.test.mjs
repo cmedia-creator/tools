@@ -24,7 +24,11 @@ for(const test of cases) {
 }
 assert.equal(pass,35);assert.equal(review,1);
 assert.equal(Object.entries(catalog.db).filter(([k])=>k!=='rules').reduce((n,[k,rows])=>n+rows.length,0),275);
-assert.equal(catalog.affiliateEnabled,false);assert.equal(catalog.affiliateLinks.length,0);
+assert.equal(typeof catalog.affiliateEnabled,'boolean');
+if(catalog.affiliateEnabled){
+  assert.ok(catalog.affiliateLinks.length>0,'Enabled catalog should contain active links');
+  assert.equal((await linkIndex(catalog)).size,catalog.affiliateLinks.length,'Every published affiliate link must validate');
+}else assert.equal(catalog.affiliateLinks.length,0);
 assert.equal(entryOptions(catalog.db.member).length,8);assert.ok(venueOptions(catalog.db).length);
 const rows=Object.entries(catalog.db).filter(([k])=>k!=='rules').flatMap(([k,v])=>v);
 assert.equal(rows.filter(r=>String(r.pilot01_use).toUpperCase()==='TRUE').length,248);
@@ -32,14 +36,15 @@ for(const row of rows)assert.deepEqual(Object.keys(row),['entry_key','canonical'
 for(const filename of ['engine.js','app.js','index.html','data/catalog.json'])assert.ok(!/google\.script|SpreadsheetApp|FROZEN_B64|c\.media\.satoru/i.test(await readFile(new URL('../'+filename,import.meta.url),'utf8')),filename+' contains private or GAS data');
 const matrix={};for(const key of ['group','member','release','store','type']){const cols=Object.keys(catalog.db[key][0]);matrix[key.toUpperCase()+'_DB']=[cols,...catalog.db[key].map(r=>cols.map(c=>r[c]))];}
 matrix.SEARCH_RULES=[['part','count','json_chunk'],[1,1,JSON.stringify(catalog.db.rules)]];
-matrix.PILOT02_SETTINGS=[['key','value'],['affiliate_enabled','FALSE']];
-matrix.AFFILIATE_LINKS=[['normalized_query','affiliate_url','status']];
+matrix.PILOT02_SETTINGS=[['key','value'],['affiliate_enabled',String(catalog.affiliateEnabled).toUpperCase()]];
+matrix.AFFILIATE_LINKS=[['normalized_query','affiliate_url','status','source','url_sha256','verified_at'],...catalog.affiliateLinks.map(r=>[r.query,r.url,r.status,r.source,r.sha256,r.verifiedAt])];
 assert.equal(publicCatalog(matrix,catalog).updatedAt,catalog.updatedAt,'No timestamp churn');
 // Browser export (display text only) converts back to the same public catalog.
 const asText=rows=>rows.map(r=>r.map(c=>c===true?'TRUE':c===false?'FALSE':String(c??'')));
 const exported={format:'toreca-sheet-export-v1',matrix:Object.fromEntries(Object.entries(matrix).map(([k,v])=>[k,asText(v)]))};
 assert.equal(JSON.stringify(publicCatalog(matrixFromExport(exported),catalog)),JSON.stringify(catalog),'Browser export round-trips to the published catalog');
 assert.throws(()=>matrixFromExport({format:'toreca-sheet-export-v1',matrix:{}}),/missing/);
+const affiliateMatrix=structuredClone(matrix);
 matrix.GROUP_DB[1].push('not exported');assert.ok(!JSON.stringify(publicCatalog(matrix)).includes('not exported'));
 // Public data whitelist: internal rule notes are dropped, and anything outside the whitelist fails validation.
 assert.deepEqual(validateCatalog(catalog),[],'Published catalog matches the public whitelist');
@@ -52,10 +57,28 @@ assert.ok(leak(c=>{c.db.member[0].note='x';}),'Extra dictionary column is reject
 assert.ok(leak(c=>{c.internal=1;}),'Extra top-level key is rejected');
 assert.ok(leak(c=>{c.db.store[0].alias='admin@example.com';}),'Email address is rejected');
 assert.ok(leak(c=>{c.db.rules.advisory_notes.codes[0].show='research-notes.md を参照';}),'Internal document reference is rejected');
-assert.ok(leak(c=>{c.affiliateLinks=[{query:'q',url:'u',status:'ACTIVE',source:'s',verifiedAt:'d',sha256:'h'}];}),'Links while disabled are rejected');
+assert.ok(leak(c=>{c.affiliateEnabled=false;c.affiliateLinks=[{query:'q',url:'u',status:'ACTIVE',source:'s',verifiedAt:'d',sha256:'h'}];}),'Links while disabled are rejected');
 const query='BABYMONSTER ラミ DRIP トレカ';
 const url='https://jp.mercari.com/search?keyword='+encodeURIComponent(query)+'&afid=123456';
 const row={query,url,status:'ACTIVE',source:'mercari_official_link_only',verifiedAt:'2026-10-11T00:00:00Z',sha256:createHash('sha256').update(url).digest('hex')};
+// Exercise the same Sheets -> publicCatalog -> browser link pipeline with both settings.
+affiliateMatrix.AFFILIATE_LINKS=[['normalized_query','affiliate_url','status','source','url_sha256','verified_at'],[row.query,row.url,row.status,row.source,row.sha256,row.verifiedAt]];
+affiliateMatrix.PILOT02_SETTINGS=[['key','value'],['affiliate_enabled','FALSE']];
+const disabledCatalog=publicCatalog(affiliateMatrix);
+assert.equal(disabledCatalog.affiliateEnabled,false);
+assert.equal(disabledCatalog.affiliateLinks.length,0);
+assert.deepEqual(validateCatalog(disabledCatalog),[]);
+affiliateMatrix.PILOT02_SETTINGS[1][1]='TRUE';
+const enabledCatalog=publicCatalog(affiliateMatrix);
+assert.equal(enabledCatalog.affiliateEnabled,true);
+assert.equal(enabledCatalog.affiliateLinks.length,1);
+assert.equal(enabledCatalog.affiliateLinks[0].url,url,'Do not alter the official URL');
+assert.deepEqual(enabledCatalog.db,disabledCatalog.db,'Affiliate state must not change search data');
+assert.deepEqual(validateCatalog(enabledCatalog),[]);
+const enabledIndex=await linkIndex(enabledCatalog);
+assert.equal(searchLink({query},enabledIndex).url,url);
+assert.equal(searchLink({query},enabledIndex).pr,true);
+assert.equal(searchLink({query:'BABYMONSTER アサ トレカ'},enabledIndex).pr,false);
 const make=affiliateLinks=>linkIndex({affiliateEnabled:true,affiliateLinks});
 assert.equal(searchLink({query},await make([row])).url,url,'Preserve official URL byte-for-byte');
 assert.equal(searchLink({query},await make([row])).pr,true);
@@ -64,4 +87,4 @@ for(const bad of [{...row,status:'HELD'},{...row,sha256:'f'.repeat(64)},{...row,
 for(const invalidUrl of ['javascript:alert(1)','https://evil.example/search?afid=123','https://jp.mercari.com/search?keyword=x&afid=123','https://name@jp.mercari.com/search?keyword='+encodeURIComponent(query)+'&afid=123','https://jp.mercari.com/search?keyword='+encodeURIComponent(query)+'&afid=123&afid=456'])assert.equal((await make([{...row,url:invalidUrl,sha256:createHash('sha256').update(invalidUrl).digest('hex')}])).size,0);
 assert.equal((await linkIndex({affiliateEnabled:false,affiliateLinks:[row]})).size,0);
 assert.equal(searchLink({query:'BABYMONSTER ルカ トレカ'},await make([row])).pr,false,'Unregistered condition uses normal URL');
-console.log(JSON.stringify({regression:{pass,fail:0,review},dictionary:{total:275,active:248},linkValidation:'PASS',publicExport:'PASS',publicWhitelist:'PASS'}));
+console.log(JSON.stringify({regression:{pass,fail:0,review},dictionary:{total:275,active:248},linkValidation:'PASS',publicExport:'PASS',publicWhitelist:'PASS',affiliateStates:'PASS'}));
