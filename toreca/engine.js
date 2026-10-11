@@ -170,7 +170,7 @@ function generateCore_(input, db) {
     candidates.push(
       candidate_(0.1, [G, mp, '会場限定', C], 'ラキドロ以外の会場特典も試す'),
       candidate_(0.2, [G, mp, 'ソウルコン', C], '会場名へ差し替える'),
-      candidate_(0.3, [G, mp, C], 'STORE・RELEASEを落とす'),
+      candidate_(0.3, [G, mp, C], '店舗・シリーズを外して探す'),
       candidate_(0.4, [GS, mp, C], 'グループ略称に差し替える'),
       candidate_(0.5, [G, rp, tp, C], 'メンバーを落としてシリーズ＋種別で探す'),
       candidate_(0.6, [G, rp, '会場限定', C], 'メンバーを落として会場特典で探す'),
@@ -381,7 +381,7 @@ function generateCore_(input, db) {
 
     if (mp) {
       candidates.push(
-        candidate_(1.2, [G, mp, C], 'STORE・RELEASE等を落として広く探す'),
+        candidate_(1.2, [G, mp, C], '店舗・シリーズを外して広く探す'),
         candidate_(1.35, [GS, mp, C], 'グループ略称を使う')
       );
     }
@@ -395,7 +395,7 @@ function generateCore_(input, db) {
     }
 
     if (rp) {
-      candidates.push(candidate_(1.3, [G, rp, C], 'メンバーを落してシリーズだけ残す'));
+      candidates.push(candidate_(1.3, [G, rp, C], 'メンバーを落としてシリーズだけ残す'));
     }
 
     if (typeKey === 'broadcast' && rp) {
@@ -422,7 +422,7 @@ function generateCore_(input, db) {
     }
 
     if (storeKey === 'withmuu' && tp) {
-      candidates.push(candidate_(0.85, [G, 'withmuu', tp, C], 'メンバーを落して店舗＋種別で探す'));
+      candidates.push(candidate_(0.85, [G, 'withmuu', tp, C], 'メンバーを落として店舗＋種別で探す'));
     }
   }
 
@@ -434,7 +434,7 @@ function generateCore_(input, db) {
   candidates = [];
 
   if (mp) {
-    candidates.push(candidate_(1, [G, mp], 'カード語も落として最大母集団を出す'));
+    candidates.push(candidate_(1, [G, mp], 'カード語も外して最も広く探す'));
 
     if (malt) {
       candidates.push(candidate_(1.05, [G, malt], 'メンバーの表記揺れだけで探す'));
@@ -508,7 +508,7 @@ function generateCore_(input, db) {
     if (releaseKey === 'i-like-it') {
       candidates.push(candidate_(1.3, [G, rp, 'ランダムトレカ'], 'シリーズ＋ランダムトレカで広く探す'));
     } else {
-      candidates.push(candidate_(2, [G, rp, C], 'メンバーを落してシリーズ全体を見る'));
+      candidates.push(candidate_(2, [G, rp, C], 'メンバーを落としてシリーズ全体を見る'));
     }
   }
 
