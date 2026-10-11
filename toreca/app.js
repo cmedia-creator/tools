@@ -1,5 +1,5 @@
 import {generate,sanitize,entryOptions,venueOptions} from './engine.js';
-import {linkIndex,searchLink} from './links.js';
+import {linkIndex,searchLink,linkAttrs} from './links.js';
 const form=document.querySelector('#search-form'),content=document.querySelector('#result-content'),status=document.querySelector('#load-status');
 let catalog,index;
 const node=(tag,text,className)=>{const el=document.createElement(tag);if(text!==undefined)el.textContent=text;if(className)el.className=className;return el;};
@@ -39,8 +39,8 @@ async function copyQuery(query,button) {
 }
 function queryCard(item) {
   const article=node('article',undefined,'query-card');article.append(node('p',item.query,'query-text'),node('p',item.why,'query-why'));
-  const actions=node('div',undefined,'query-actions'),link=searchLink(item,index),a=node('a',link.pr?'メルカリで探す（PR） ↗':'メルカリで探す ↗','mercari-link');
-  a.href=link.url;a.target='_blank';a.rel=link.pr?'noopener sponsored':'noopener noreferrer';a.setAttribute('aria-label',item.query+'をメルカリで探す（新しいタブ）');
+  const actions=node('div',undefined,'query-actions'),link=searchLink(item,index),attrs=linkAttrs(link),a=node('a',attrs.text,'mercari-link');
+  a.href=link.url;a.target='_blank';a.rel=attrs.rel;a.setAttribute('aria-label',item.query+'をメルカリで探す'+(link.pr?'（PR・アフィリエイトリンク）':'')+'（新しいタブ）');
   const button=node('button','コピー','copy-button');button.type='button';button.setAttribute('aria-label',item.query+'をコピー');button.addEventListener('click',()=>copyQuery(item.query,button));actions.append(a,button);article.append(actions);return article;
 }
 function render(scroll=true) {

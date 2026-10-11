@@ -24,3 +24,7 @@ export function searchLink(item,index) {
   const registered=index.get(normalize(item.query));
   return registered ? {url:registered,pr:true} : {url:'https://jp.mercari.com/search?keyword='+encodeURIComponent(item.query),pr:false};
 }
+// Button text and rel for a link from searchLink(); affiliate links are labelled PR and marked sponsored.
+export function linkAttrs(link) {
+  return link.pr ? {text:'メルカリで探す（PR） ↗',rel:'noopener sponsored'} : {text:'メルカリで探す ↗',rel:'noopener noreferrer'};
+}
