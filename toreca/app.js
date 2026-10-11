@@ -50,6 +50,7 @@ function render(scroll=true) {
   fragment.append(node('div',names.length?names.join(' / '):'BABYMONSTERのトレカを広く探します','resolved'));
   result.advisoryNotes.forEach(n=>fragment.append(node('p',n.text,'advisory')));
   if(input.freeform&&!names.length)fragment.append(node('p','手がかりを辞書で特定できませんでした。選択欄も使って条件を指定してください。','advisory'));
+  if(Object.values(result.steps).flat().some(item=>searchLink(item,index).pr))fragment.append(node('p','「PR」と表示したボタンはアフィリエイトリンクです。そのリンク経由の購入により運営者に報酬が入る場合があります。','pr-note'));
   const titles={1:'まずは絞って探す',2:'表記を変えて探す',3:'条件を減らして探す'},descriptions={1:'シリーズや店舗名を使う、最初の検索候補。',2:'見つからなければ、略称や別の表記を試します。',3:'結果が広がります。カード以外やセットも含むため、画像を確かめてください。'};
   for(const step of [1,2,3]) {
     const items=result.steps[String(step)];if(!items.length)continue;
