@@ -10,7 +10,7 @@
 - 辞書275行（出力対象248、入力解決専用27）。既存の検索語生成ロジックを移植。
 - 検索ログ・個人情報・内部メモ・観測件数・テスト用証拠は公開しない。
 - 公開してよいキーは `scripts/catalog-schema.mjs` のホワイトリストで管理。辞書は7列、ルールは注意文の `id` / `show` のみ。同期とテストの両方で `validateCatalog()` を通し、ホワイトリスト外のキー・メールアドレス・内部文書参照などを検出したら公開データを書き換えない。
-- 公開中のリンクはすべて通常の検索リンク（アフィリエイト無効）。公式URLは管理DBに登録済みだが、有効化するまで公開データには含めない（下記「アフィリエイト」）。
+- 管理DBに登録した24の検索語だけ公式アフィリエイトURL（PR表示）。その他はすべて通常の検索リンク（下記「アフィリエイト」）。
 - 検索・クリックのサーバー計測は未接続。検索条件はページURLにも反映されるため、共有したURLにはその条件が含まれる。
 
 ## 更新
@@ -36,9 +36,9 @@ PR表示・購入による運営者への報酬説明・明示クリックを使
 
 | 項目 | 状態 |
 | --- | --- |
-| 管理DB `AFFILIATE_LINKS` | 24候補すべて `ACTIVE`。公式ツールバーの「リンクのみ」で発行したURLをそのまま登録（メンバー7人 × 指定なし / DRIP / CHOOM の21件と、`BABYMONSTER DRIP / CHOOM / ラキドロ トレカ`）。DRIP / CHOOM の組み合わせは、シリーズをドロップダウンで選んだときに公式表記を使う修正（ブランチ `fix/toreca-release-dropdown-alias`）を入れるまで、手がかり入力からしか生成されない |
-| 管理DB `PILOT02_SETTINGS` の `affiliate_enabled` | `FALSE` |
-| 公開データ `data/catalog.json` | `affiliateEnabled:false`、`affiliateLinks:[]`。サイト上はすべて通常リンクで、PR表示も出ない |
+| 管理DB `AFFILIATE_LINKS` | 24候補すべて `ACTIVE`。公式ツールバーの「リンクのみ」で発行したURLをそのまま登録（メンバー7人 × 指定なし / DRIP / CHOOM の21件と、`BABYMONSTER DRIP / CHOOM / ラキドロ トレカ`）。シリーズをドロップダウンで選んだときは公式表記（DRIP / CHOOM）がSTEP 1の先頭になり、従来の長い表記（1st FULL ALBUM など）が2番目に残る |
+| 管理DB `PILOT02_SETTINGS` の `affiliate_enabled` | `TRUE` |
+| 公開データ `data/catalog.json` | `affiliateEnabled:true`、`affiliateLinks` 24件。登録済みの検索語だけ「メルカリで探す（PR）」、その他は通常リンク |
 
 無効のあいだは、管理DBにACTIVE行があっても同期・取り込みで公開データへは出力しない（`validateCatalog()` も無効時のリンクを拒否する）。
 
