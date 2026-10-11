@@ -1,0 +1,3 @@
+# Admin sheet exports (toreca) contain internal columns: keep them outside the repository.
+**/sheet-export*.json
+**/*.export.json
