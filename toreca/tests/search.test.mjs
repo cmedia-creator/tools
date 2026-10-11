@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {generate,sanitize,entryOptions,venueOptions} from '../engine.js';
-import {linkIndex,searchLink,bandLink,bandedItems,linkAttrs,bandAttrs,urlProblem,MAX_BAND_BUTTONS} from '../links.js';
+import {linkIndex,searchLink,linkAttrs} from '../links.js';
 import {publicCatalog} from '../scripts/sync-sheet.mjs';
 import {validateCatalog} from '../scripts/catalog-schema.mjs';
 import {matrixFromExport} from '../scripts/import-sheet-export.mjs';
@@ -149,60 +149,23 @@ const memberStep3=steps({member:'RAMI'})[3].map(q=>q.query);
 assert.ok(memberStep3.indexOf('BABYMONSTER トレカ 特典')>memberStep3.indexOf('BABYMONSTER ラミ まとめ売り'),'特典 goes after the member queries');
 assert.ok(steps({})[3].some(q=>q.query==='BABYMONSTER トレカ 特典'),'Without a member the generic words stay');
 
-// Link variants: a query can have an 'all' link and a price-band link. Each variant fixes its exact parameters.
+// One official link per query, no price filter: a price-narrowed official URL is not accepted.
 const sha=u=>createHash('sha256').update(u).digest('hex');
 const officialSearch=(query,extra={})=>'https://jp.mercari.com/search?'+new URLSearchParams({afid:'1722203408',keyword:query,...extra});
-const BAND_PARAMS={price_max:'39999',price_min:'2000',status:'on_sale'};
-const fq='BABYMONSTER ファリタ トレカ',bandUrl=officialSearch(fq,BAND_PARAMS);
-assert.equal(bandUrl,'https://jp.mercari.com/search?afid=1722203408&keyword=BABYMONSTER+%E3%83%95%E3%82%A1%E3%83%AA%E3%82%BF+%E3%83%88%E3%83%AC%E3%82%AB&price_max=39999&price_min=2000&status=on_sale','Same form as the official toolbar link');
-const linkRow=(query,url,variant)=>({query,variant,url,status:'ACTIVE',source:'mercari_official_link_only',verifiedAt:'2026-10-11T00:00:00Z',sha256:sha(url)});
-const bandRow=linkRow(fq,bandUrl,'band_2000_39999');
-const bandIndex=await make([bandRow]);
-assert.equal(bandIndex.size,1);
-assert.deepEqual(bandLink({query:fq},bandIndex),{url:bandUrl,pr:true},'Band URL is used byte-for-byte');
-assert.deepEqual(searchLink({query:fq},bandIndex),{url:'https://jp.mercari.com/search?keyword='+encodeURIComponent(fq),pr:false},'The main button stays a normal search');
-assert.equal(bandLink({query},bandIndex),null,'Queries without a band link get no band button');
-assert.equal(urlProblem(bandUrl,fq,'band_2000_39999'),'');
-for(const [url,variant] of [
-  [bandUrl,'all'],                                                     // band URL registered as a plain link
-  [officialSearch(fq),'band_2000_39999'],                              // plain URL registered as a band link
-  [officialSearch(fq,{...BAND_PARAMS,price_min:'3000'}),'band_2000_39999'],
-  [officialSearch(fq,{price_max:'39999',price_min:'2000'}),'band_2000_39999'],
-  [officialSearch(fq,{...BAND_PARAMS,sort:'price'}),'band_2000_39999'],
-  [bandUrl+'&price_min=2000','band_2000_39999'],
-  [officialSearch(fq,{sort:'price'}),'all'],
-  [bandUrl,'band_x']
-]){
-  assert.ok(urlProblem(url,fq,variant),'Rejected: '+variant+' '+url);
-  assert.equal((await make([linkRow(fq,url,variant)])).size,0,'Index rejects: '+variant+' '+url);
-}
-// Same query with both variants: both are valid, the card shows one PR button (the band one) and a normal main button.
-const allUrl=officialSearch(fq),both=await make([linkRow(fq,allUrl,'all'),bandRow]);
-assert.equal(both.size,2,'Duplicate check is per query and variant');
-assert.equal(searchLink({query:fq},both).pr,false);assert.equal(bandLink({query:fq},both).url,bandUrl);
-assert.deepEqual(searchLink({query:fq},await make([linkRow(fq,allUrl,'all')])),{url:allUrl,pr:true},'An all-only query keeps its PR main button');
-const dup=await make([linkRow(fq,allUrl,'all'),bandRow,{...bandRow}]);
-assert.equal(dup.size,1,'Two band rows for one query fail closed, the all link stays');assert.equal(bandLink({query:fq},dup),null);assert.equal(searchLink({query:fq},dup).pr,true);
-// At most MAX_BAND_BUTTONS band buttons per result, in display order.
-const many=['A','B','C','D','E'].map(x=>'BABYMONSTER '+x+' トレカ');
-const manyIndex=await make(many.map(q=>linkRow(q,officialSearch(q,BAND_PARAMS),'band_2000_39999')));
-assert.deepEqual([...bandedItems([{query:'x'},...many.map(query=>({query}))],manyIndex)].map(i=>i.query),many.slice(0,MAX_BAND_BUTTONS));
-assert.equal(bandAttrs.rel.includes('sponsored'),true);assert.match(bandAttrs.text,/（PR）/);
-
-// AFFILIATE_LINKS with the five PILOT 03 columns: only query/variant/url/status/source/verifiedAt/sha256 are published.
+const linkRow=(query,url)=>({query,url,status:'ACTIVE',source:'mercari_official_link_only',verifiedAt:'2026-10-12T00:00:00Z',sha256:sha(url)});
+const sq='BABYMONSTER ローラ ktown4u サイン会';
+assert.equal((await make([linkRow(sq,officialSearch(sq))])).size,1,'A store x benefit query takes a plain official link');
+assert.equal((await make([linkRow(sq,officialSearch(sq,{price_max:'39999',price_min:'2000',status:'on_sale'}))])).size,0,'A price-filtered URL is rejected');
+assert.equal((await make([linkRow(sq,officialSearch(sq)),linkRow(sq,officialSearch(sq))])).size,0,'Two links for one query fail closed');
+// AFFILIATE_LINKS with the PILOT 03 management columns: they never reach the public catalog.
 const head=['pattern_id','group_id','member_id','series_id','benefit_id','type_id','normalized_query','affiliate_url','status','verified_at','source','url_sha256','note','link_variant','category','eval','evaluated_at','review_due'];
-const pRow=(q,u,variant,status='ACTIVE')=>['p3_x','babymonster','','','','',q,u,status,'2026-10-11T04:00:00Z','mercari_official_link_only',sha(u),'採用理由メモ',variant,'表記揺れ','D107 P87 R101','2026-10-11','2027-01-09'];
+const pRow=(q,u)=>['p3_x','babymonster','','','','',q,u,'ACTIVE','2026-10-12T04:00:00Z','mercari_official_link_only',sha(u),'採用理由メモ','all','S','D107 P87 R101','2026-10-12','2027-01-10'];
 const p3=structuredClone(sheetMatrix);
-p3.AFFILIATE_LINKS=[head,pRow(officialQuery,officialUrl,'all'),pRow(fq,bandUrl,'band_2000_39999'),pRow(fq,allUrl,''),pRow(fq,bandUrl,'band_9'),pRow('BABYMONSTER ロラ トレカ',officialSearch('BABYMONSTER ロラ トレカ',BAND_PARAMS),'band_2000_39999','HELD')];
+p3.AFFILIATE_LINKS=[head,pRow(officialQuery,officialUrl),pRow(sq,officialSearch(sq))];
 const p3Catalog=publicCatalog(p3);
 assert.deepEqual(validateCatalog(p3Catalog),[]);
-assert.deepEqual(p3Catalog.affiliateLinks.map(l=>[l.query,l.variant,l.url]),[[officialQuery,'all',officialUrl],[fq,'band_2000_39999',bandUrl],[fq,'all',allUrl]],'Blank link_variant is all; unknown variants and HELD rows are not published');
-assert.deepEqual(Object.keys(p3Catalog.affiliateLinks[0]),['query','variant','url','status','source','verifiedAt','sha256']);
-assert.ok(!/D107|表記揺れ|2027-01-09|採用理由/.test(JSON.stringify(p3Catalog)),'Evaluation columns never reach the public catalog');
-p3.AFFILIATE_LINKS.push(pRow(fq,bandUrl,'band_2000_39999'));
-assert.deepEqual(publicCatalog(p3).affiliateLinks.map(l=>l.variant),['all','all'],'A duplicated query+variant is dropped, other variants stay');
-assert.ok(leak(c=>{c.affiliateLinks[0].variant='band_x';}),'Unknown variant is rejected');
-assert.ok(leak(c=>{delete c.affiliateLinks[0].variant;}),'Missing variant is rejected');
+assert.deepEqual(p3Catalog.affiliateLinks.map(l=>[l.query,l.url]),[[officialQuery,officialUrl],[sq,officialSearch(sq)]]);
+assert.deepEqual(Object.keys(p3Catalog.affiliateLinks[0]),['query','url','status','source','verifiedAt','sha256']);
+assert.ok(!/D107|採用理由|2027-01-10/.test(JSON.stringify(p3Catalog)),'Evaluation columns never reach the public catalog');
 assert.ok(leak(c=>{c.affiliateLinks[0].eval='D1';}),'Evaluation key is rejected');
-assert.ok(catalog.affiliateLinks.every(l=>l.variant==='all'),'The 24 live links are all-variant links');
-console.log(JSON.stringify({regression:{pass,fail:0,review},dictionary:{total:275,active:248},linkValidation:'PASS',publicExport:'PASS',publicWhitelist:'PASS',affiliateStates:'PASS',discoveryTerms:'PASS',linkVariants:'PASS'}));
+console.log(JSON.stringify({regression:{pass,fail:0,review},dictionary:{total:275,active:248},linkValidation:'PASS',publicExport:'PASS',publicWhitelist:'PASS',affiliateStates:'PASS',discoveryTerms:'PASS',oneLinkPerQuery:'PASS'}));

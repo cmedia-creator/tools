@@ -1,5 +1,5 @@
 import {generate,sanitize,entryOptions,venueOptions} from './engine.js';
-import {linkIndex,searchLink,bandLink,bandedItems,linkAttrs,bandAttrs} from './links.js';
+import {linkIndex,searchLink,linkAttrs} from './links.js';
 const form=document.querySelector('#search-form'),content=document.querySelector('#result-content'),status=document.querySelector('#load-status');
 let catalog,index;
 const node=(tag,text,className)=>{const el=document.createElement(tag);if(text!==undefined)el.textContent=text;if(className)el.className=className;return el;};
@@ -37,15 +37,11 @@ async function copyQuery(query,button) {
   try{await navigator.clipboard.writeText(query);button.textContent='コピー済み';setTimeout(()=>{button.textContent='コピー';},1600);}
   catch{const field=node('textarea');field.value=query;field.readOnly=true;button.closest('.query-card').append(field);field.select();button.textContent='検索語を選択しました';}
 }
-function queryCard(item,showBand) {
+function queryCard(item) {
   const article=node('article',undefined,'query-card');article.append(node('p',item.query,'query-text'),node('p',item.why,'query-why'));
   const actions=node('div',undefined,'query-actions'),link=searchLink(item,index),attrs=linkAttrs(link),a=node('a',attrs.text,'mercari-link');
   a.href=link.url;a.target='_blank';a.rel=attrs.rel;a.setAttribute('aria-label',item.query+'をメルカリで探す'+(link.pr?'（PR・アフィリエイトリンク）':'')+'（新しいタブ）');
-  const button=node('button','コピー','copy-button');button.type='button';button.setAttribute('aria-label',item.query+'をコピー');button.addEventListener('click',()=>copyQuery(item.query,button));actions.append(a,button);article.append(actions);
-  // The price-band PR button sits under the normal buttons, only for adopted queries.
-  const band=showBand?bandLink(item,index):null;
-  if(band){const b=node('a',bandAttrs.text,'band-link');b.href=band.url;b.target='_blank';b.rel=bandAttrs.rel;b.setAttribute('aria-label',item.query+'の¥2,000〜39,999の販売中の出品をメルカリで見る（PR・アフィリエイトリンク）（新しいタブ）');article.append(b);}
-  return article;
+  const button=node('button','コピー','copy-button');button.type='button';button.setAttribute('aria-label',item.query+'をコピー');button.addEventListener('click',()=>copyQuery(item.query,button));actions.append(a,button);article.append(actions);return article;
 }
 function render(scroll=true) {
   if(!catalog)return;
@@ -54,16 +50,14 @@ function render(scroll=true) {
   fragment.append(node('div',names.length?names.join(' / '):'BABYMONSTERのトレカを広く探します','resolved'));
   result.advisoryNotes.forEach(n=>fragment.append(node('p',n.text,'advisory')));
   if(input.freeform&&!names.length)fragment.append(node('p','手がかりを辞書で特定できませんでした。選択欄も使って条件を指定してください。','advisory'));
-  const cards=[1,2,3].flatMap(step=>result.steps[String(step)]),banded=bandedItems(cards,index);
-  if(banded.size)fragment.append(node('p','「PR」と表示したボタンはアフィリエイトリンクです。「¥2,000〜の販売中を見る」は、¥2,000〜39,999の販売中の出品に絞った検索です。そのリンク経由の購入により運営者に報酬が入る場合があります。','pr-note'));
-  else if(cards.some(item=>searchLink(item,index).pr))fragment.append(node('p','「PR」と表示したボタンはアフィリエイトリンクです。そのリンク経由の購入により運営者に報酬が入る場合があります。','pr-note'));
+  if(Object.values(result.steps).flat().some(item=>searchLink(item,index).pr))fragment.append(node('p','「PR」と表示したボタンはアフィリエイトリンクです。そのリンク経由の購入により運営者に報酬が入る場合があります。','pr-note'));
   const titles={1:'まずは絞って探す',2:'表記を変えて探す',3:'条件を減らして探す'},descriptions={1:'シリーズや店舗名を使う、最初の検索候補。',2:'見つからなければ、出品者がよく使う通称や別の表記を試します。',3:'結果が広がります。カード以外やセットも含むため、画像を確かめてください。'};
   for(const step of [1,2,3]) {
     const items=result.steps[String(step)];if(!items.length)continue;
     let outer,section;
     if(step===1){outer=section=node('section',undefined,'step');const title=node('h3',undefined,'step-title');title.append(node('b','STEP 1'),node('span',titles[step]));section.append(title);}
     else{outer=node('details',undefined,'later-step');const summary=node('summary','STEP '+step+' · '+titles[step]+'（'+items.length+'候補）');outer.append(summary);section=node('div');outer.append(section);if(step===2)outer.open=true;}
-    section.append(node('p',descriptions[step],'step-description'));items.forEach(item=>section.append(queryCard(item,banded.has(item))));fragment.append(outer);
+    section.append(node('p',descriptions[step],'step-description'));items.forEach(item=>section.append(queryCard(item)));fragment.append(outer);
   }
   fragment.append(node('p','検索結果の在庫や価格はメルカリで確認してください。','results-end'));content.replaceChildren(fragment);
   const params=new URLSearchParams();for(const [key,value]of Object.entries(raw))if(value)params.set(key,value);
