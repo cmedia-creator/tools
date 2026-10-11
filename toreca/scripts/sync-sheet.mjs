@@ -2,6 +2,7 @@ import {createSign,createHash} from 'node:crypto';
 import {readFile,writeFile,rename} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {SCHEMA,DICTIONARY_TABS as tabs,DICTIONARY_COLUMNS as columns,publicRules,validateCatalog} from './catalog-schema.mjs';
+import {urlProblem} from '../links.js';
 const catalogPath=fileURLToPath(new URL('../data/catalog.json',import.meta.url));
 const objects=rows=>{if(!rows?.length)throw new Error('Required sheet is empty');return rows.slice(1).filter(r=>r[0]).map(row=>Object.fromEntries(rows[0].map((name,i)=>[name,row[i]??''])));};
 const clean=value=>String(value??'');
@@ -22,16 +23,16 @@ export function publicCatalog(matrix,previous) {
   const affiliateLinks=[];
   const rows=matrix.AFFILIATE_LINKS?.length?objects(matrix.AFFILIATE_LINKS):[];
   const normalize=v=>String(v||'').normalize('NFKC').toLowerCase().replace(/\s+/g,' ').trim();
-  const counts=new Map();rows.forEach(row=>{const k=normalize(row.normalized_query);counts.set(k,(counts.get(k)||0)+1);});
+  // link_variant is blank on rows made before the column existed; those are plain 'all' links.
+  const variantOf=row=>String(row.link_variant||'').trim()||'all',keyOf=row=>normalize(row.normalized_query)+'\n'+variantOf(row);
+  const counts=new Map();rows.forEach(row=>{const k=keyOf(row);counts.set(k,(counts.get(k)||0)+1);});
   if(enabled)for(const row of rows) {
     if(row.status!=='ACTIVE')continue;
     try {
-      const url=new URL(row.affiliate_url),key=normalize(row.normalized_query);
       const hash=createHash('sha256').update(row.affiliate_url).digest('hex');
-      if(counts.get(key)!==1 || row.source!=='mercari_official_link_only' || hash!==row.url_sha256 || !Number.isFinite(Date.parse(row.verified_at)))continue;
-      if(url.protocol!=='https:'||url.hostname!=='jp.mercari.com'||url.pathname!=='/search'||url.username||url.password||url.port||url.hash)continue;
-      if(url.searchParams.getAll('keyword').length!==1||normalize(url.searchParams.get('keyword'))!==key||url.searchParams.getAll('afid').length!==1||!/^\d+$/.test(url.searchParams.get('afid')))continue;
-      affiliateLinks.push({query:row.normalized_query,url:row.affiliate_url,status:'ACTIVE',source:row.source,verifiedAt:row.verified_at,sha256:hash});
+      if(counts.get(keyOf(row))!==1 || row.source!=='mercari_official_link_only' || hash!==row.url_sha256 || !Number.isFinite(Date.parse(row.verified_at)))continue;
+      if(urlProblem(row.affiliate_url,row.normalized_query,variantOf(row)))continue;
+      affiliateLinks.push({query:row.normalized_query,variant:variantOf(row),url:row.affiliate_url,status:'ACTIVE',source:row.source,verifiedAt:row.verified_at,sha256:hash});
     }catch { /* Invalid rows are never published as affiliate links. */ }
   }
   const catalog={schema:SCHEMA,updatedAt:new Date().toISOString(),affiliateEnabled:enabled,affiliateLinks,db};
@@ -57,7 +58,7 @@ export async function sync() {
   const token=await fetchJson('https://oauth2.googleapis.com/token',{method:'POST',body:new URLSearchParams({grant_type:'urn:ietf:params:oauth:grant-type:jwt-bearer',assertion})});
   const names=[...tabs,'SEARCH_RULES','AFFILIATE_LINKS','PILOT02_SETTINGS'];
   const url=new URL('https://sheets.googleapis.com/v4/spreadsheets/'+encodeURIComponent(sheetId)+'/values:batchGet');
-  names.forEach(name=>url.searchParams.append('ranges',name+'!A1:M1001'));url.searchParams.set('valueRenderOption','UNFORMATTED_VALUE');
+  names.forEach(name=>url.searchParams.append('ranges',name+'!A1:Z1001'));url.searchParams.set('valueRenderOption','UNFORMATTED_VALUE');
   const response=await fetchJson(url,{headers:{Authorization:'Bearer '+token.access_token}});
   const matrix=Object.fromEntries(names.map((name,i)=>[name,response.valueRanges[i]?.values||[]]));
   await writeCatalog(matrix);

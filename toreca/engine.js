@@ -164,6 +164,10 @@ function generateCore_(input, db) {
 
   candidates = [];
 
+  const discovery = specialLuckyChoomUnion
+    ? []
+    : discoveryCandidates_({release: r, store: s, type: t, venue: v, region: reg}, db, G, C);
+
   if (specialLuckyChoomUnion) {
     // M-01 / H-02 は入力が同一で期待戦略だけが違う。
     // 7枠の中で両方を満たす候補を提示する。
@@ -189,6 +193,8 @@ function generateCore_(input, db) {
       );
     }
 
+    candidates.push(...discovery);
+
     if (mp && malt) {
       if (rp) {
         candidates.push(candidate_(0.5, [G, malt, rp, C], 'メンバーの表記揺れを試す'));
@@ -198,7 +204,7 @@ function generateCore_(input, db) {
         }
       }
 
-      candidates.push(candidate_(0.8, [G, malt, C], 'メンバーの表記揺れで広く探す'));
+      candidates.push(candidate_(0.1, [G, malt, C], '出品者が使う別表記「' + malt + '」。「' + mp + '」の検索に出ない出品が見つかる'));
     }
 
     if (
@@ -381,7 +387,7 @@ function generateCore_(input, db) {
 
     if (mp) {
       candidates.push(
-        candidate_(1.2, [G, mp, C], '店舗・シリーズを外して広く探す'),
+        Object.assign(candidate_(1.2, [G, mp, C], '店舗・シリーズを外して広く探す'), {base: true}),
         candidate_(1.35, [GS, mp, C], 'グループ略称を使う')
       );
     }
@@ -395,7 +401,7 @@ function generateCore_(input, db) {
     }
 
     if (rp) {
-      candidates.push(candidate_(1.3, [G, rp, C], 'メンバーを落としてシリーズだけ残す'));
+      candidates.push(Object.assign(candidate_(1.3, [G, rp, C], 'メンバーを落としてシリーズだけ残す'), {base: true}));
     }
 
     if (typeKey === 'broadcast' && rp) {
@@ -424,6 +430,16 @@ function generateCore_(input, db) {
     if (storeKey === 'withmuu' && tp) {
       candidates.push(candidate_(0.85, [G, 'withmuu', tp, C], 'メンバーを落として店舗＋種別で探す'));
     }
+  }
+
+  // Discovery terms displace the lowest-ranked candidates, but a base query (the member's or the series'
+  // own) that would be shown without them keeps its slot.
+  if (discovery.length) {
+    const without = gen.preview(2, candidates.filter(c => !discovery.includes(c)));
+
+    candidates.forEach(c => {
+      c.keep = !!c.base && without.includes(queryDedupKey_(c.values.filter(Boolean).join(' ')));
+    });
   }
 
   gen.runStep(2, candidates);
@@ -534,9 +550,10 @@ function generateCore_(input, db) {
     );
   }
 
+  // With a member given these group-wide words are close to "show everything", so they go last.
   candidates.push(
-    candidate_(3, [G, C, '特典'], '正式種別を知らない出品者向けの汎用語'),
-    candidate_(3.2, [G, C, '限定'], '限定表記を広く拾う')
+    candidate_(mp ? 6.5 : 3, [G, C, '特典'], '正式種別を知らない出品者向けの汎用語'),
+    candidate_(mp ? 6.6 : 3.2, [G, C, '限定'], '限定表記を広く拾う')
   );
 
   if (mp) {
@@ -610,6 +627,16 @@ QueryCollector_.prototype.runStep = function(step, candidates) {
   }[step];
 
   const sorted = (candidates || []).slice().sort((a, b) => a.priority - b.priority);
+  const usable = candidate => {
+    const values = (candidate.values || []).filter(Boolean);
+    const query = values.join(' ').replace(/\s+/g, ' ').trim();
+
+    if (!values.length || values.length > maxSlots || rawTokenCount_(values) > 6 || !query) {
+      return '';
+    }
+
+    return query;
+  };
 
   for (let i = 0; i < sorted.length; i++) {
     if (this.steps[String(step)].length >= maxQueries) {
@@ -618,20 +645,7 @@ QueryCollector_.prototype.runStep = function(step, candidates) {
 
     const candidate = sorted[i];
     const values = (candidate.values || []).filter(Boolean);
-
-    if (!values.length) {
-      continue;
-    }
-
-    if (values.length > maxSlots) {
-      continue;
-    }
-
-    if (rawTokenCount_(values) > 6) {
-      continue;
-    }
-
-    const query = values.join(' ').replace(/\s+/g, ' ').trim();
+    const query = usable(candidate);
 
     if (!query) {
       continue;
@@ -640,6 +654,13 @@ QueryCollector_.prototype.runStep = function(step, candidates) {
     const dedupKey = queryDedupKey_(query);
 
     if (this.seen[dedupKey]) {
+      continue;
+    }
+
+    // Leave room for later candidates marked keep.
+    const keepLater = sorted.slice(i + 1).filter(c => c.keep && usable(c) && !this.seen[queryDedupKey_(usable(c))]).length;
+
+    if (!candidate.keep && this.steps[String(step)].length >= maxQueries - keepLater) {
       continue;
     }
 
@@ -656,6 +677,17 @@ QueryCollector_.prototype.runStep = function(step, candidates) {
       mercariUrl: CONFIG.MERCARI_SEARCH_BASE + encodeURIComponent(query)
     });
   }
+};
+
+
+// The dedup keys runStep would select, without changing the collector.
+QueryCollector_.prototype.preview = function(step, candidates) {
+  const copy = new QueryCollector_();
+
+  copy.seen = Object.assign({}, this.seen);
+  copy.runStep(step, candidates);
+
+  return copy.steps[String(step)].map(item => queryDedupKey_(item.query));
 };
 
 
@@ -1045,6 +1077,79 @@ function regionAliases_(resolved, input, db) {
       .filter(row => normalize_(row.alias) !== normalize_(primary))
       .map(row => row.alias)
   };
+}
+
+
+/*
+ * Discovery terms: the word sellers put in listing titles for the channel the user picked, which the
+ * user's own query does not contain. Each rule names the input that triggers it and takes the word from
+ * the dictionary by alias_kind. The query is group level because these listings often omit the member.
+ */
+const DISCOVERY_RULES_ = [
+  {slot: 'type', keys: ['winner_only'], table: 'type', kind: 'ja_primary', why: '当選者限定の特典は「{t}」と書いて出品されることが多い。メンバー名のない出品も拾う'},
+  {slot: 'type', keys: ['broadcast'], table: 'type', kind: 'ja_primary', why: '事前収録の特典は「{t}」と書いて出品されることが多い。メンバー名のない出品も拾う'},
+  {slot: 'store', keys: ['tower'], table: 'store', kind: 'branch', why: 'タワレコのカフェ・コラボ特典は支店名「{t}」で出品される'},
+  {slot: 'store', keys: ['qqmusic', 'jingdong', 'tme'], table: 'type', entry: 'region', kind: 'ja_china', why: '中国の店舗特典は「{t}」とまとめて書かれ、店舗名のない出品も多い'},
+  {slot: 'region', kinds: ['ja_china2', 'ja_china3'], table: 'type', entry: 'region', kind: 'ja_china', why: '中国の店舗特典は「{t}」とまとめて書かれ、店舗名のない出品も多い'}
+];
+const MAX_DISCOVERY_ = 2;
+
+function discoveryCandidates_(slots, db, group, card) {
+  const out = [];
+  const add = (values, why) => {
+    if (out.length < MAX_DISCOVERY_ && !out.some(c => queryDedupKey_(c.values.join(' ')) === queryDedupKey_(values.join(' ')))) {
+      out.push(candidate_(0.12 + out.length * 0.02, values, why));
+    }
+  };
+
+  DISCOVERY_RULES_.forEach(rule => {
+    const slot = slots[rule.slot] || {};
+    const triggered = rule.keys
+      ? rule.keys.includes(slot.key)
+      : !!slot.primary && rule.kinds.includes(aliasKindOf_(db[rule.table], slot.key, slot.primary));
+
+    if (!triggered) {
+      return;
+    }
+
+    const term = aliasByKind_(db[rule.table], rule.entry || slot.key, [rule.kind]);
+
+    if (term) {
+      add([group, term, card], rule.why.replace('{t}', term));
+    }
+  });
+
+  // Venue-limited random cards are listed as "<short venue> ラントレ". The short venue is the tour's
+  // venue_ja3 alias; it applies when that venue, its tour, or venue-limited cards in general are asked for.
+  const random = aliasByKind_(db.type, 'album_inclusion', ['ja_short']);
+  const venueRow = slots.venue.key
+    ? activeEntryRows_(db.release, slots.venue.key).find(row => normalize_(row.alias) === normalize_(slots.venue.primary))
+    : null;
+  let venueEntry = '';
+
+  if (venueRow && ['venue_ja2', 'venue_ja3'].includes(venueRow.alias_kind)) {
+    venueEntry = venueRow.entry_key;
+  } else if (!slots.venue.primary && aliasByKind_(db.release, slots.release.key, ['venue_ja3'])) {
+    venueEntry = slots.release.key;
+  } else if (!slots.venue.primary && !slots.release.primary && slots.type.key === 'venue') {
+    const row = db.release.filter(r => isOutputAlias_(r) && r.alias_kind === 'venue_ja3').sort(prioritySort_)[0];
+    venueEntry = row ? row.entry_key : '';
+  }
+
+  const shortVenue = venueEntry ? aliasByKind_(db.release, venueEntry, ['venue_ja3']) : '';
+
+  if (shortVenue && random) {
+    add([group, shortVenue, random], '会場限定のランダムトレカは「' + shortVenue + ' ' + random + '」のように会場名の略称で出品される');
+  }
+
+  return out;
+}
+
+
+function aliasKindOf_(rows, key, alias) {
+  const row = activeEntryRows_(rows, key).find(r => normalize_(r.alias) === normalize_(alias));
+
+  return row ? row.alias_kind : '';
 }
 
 

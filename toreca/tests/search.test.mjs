@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {generate,sanitize,entryOptions,venueOptions} from '../engine.js';
-import {linkIndex,searchLink,linkAttrs} from '../links.js';
+import {linkIndex,searchLink,bandLink,bandedItems,linkAttrs,bandAttrs,urlProblem,MAX_BAND_BUTTONS} from '../links.js';
 import {publicCatalog} from '../scripts/sync-sheet.mjs';
 import {validateCatalog} from '../scripts/catalog-schema.mjs';
 import {matrixFromExport} from '../scripts/import-sheet-export.mjs';
@@ -112,4 +112,97 @@ assert.deepEqual(step1({member:'RAMI',release:'DRIP (1st FULL ALBUM)'}).slice(0,
 assert.deepEqual(step1({member:'RUKA',release:'CHOOM / 춤 (3rd MINI ALBUM)'}).slice(0,2),['BABYMONSTER ルカ CHOOM トレカ','BABYMONSTER ルカ 3rd MINI ALBUM トレカ']);
 assert.equal(step1({member:'RAMI',release:'1st FULL ALBUM'})[0],'BABYMONSTER ラミ 1st FULL ALBUM トレカ','An alias typed as the release is used as given');
 assert.ok(!step1({member:'RAMI',release:'HOT SAUCE'}).some(q=>/HOT SOURCE/.test(q)),'Misspelled aliases are not promoted to STEP 1');
-console.log(JSON.stringify({regression:{pass,fail:0,review},dictionary:{total:275,active:248},linkValidation:'PASS',publicExport:'PASS',publicWhitelist:'PASS',affiliateStates:'PASS'}));
+// Discovery terms: a channel the user picked brings in the word sellers use for it, as a group-level STEP 2 query.
+const steps=input=>generate(sanitize(input),catalog.db).steps;
+const step2=input=>steps(input)[2].map(q=>q.query);
+const allQueries=input=>Object.values(steps(input)).flat().map(q=>q.query);
+const DISCOVERY=['BABYMONSTER ヨントン トレカ','BABYMONSTER サノク トレカ','BABYMONSTER タワレコカフェ トレカ','BABYMONSTER 中華 トレカ','BABYMONSTER 京セラ ラントレ'];
+const WINNER='当選者限定（ヨントン / サイン会）',TOWER='タワーレコード',TOUR2='2nd WORLD TOUR [춤 (CHOOM)]';
+for(const [input,query] of [
+  [{member:'RAMI',type:WINNER},'BABYMONSTER ヨントン トレカ'],
+  [{freeform:'ラミ ヨントン'},'BABYMONSTER ヨントン トレカ'],
+  [{member:'ASA',release:'DRIP (1st FULL ALBUM)',type:'サノク / 公開放送（事前収録）'},'BABYMONSTER サノク トレカ'],
+  [{member:'RUKA',store:TOWER},'BABYMONSTER タワレコカフェ トレカ'],
+  [{freeform:'タワレコ ルカ'},'BABYMONSTER タワレコカフェ トレカ'],
+  [{member:'CHIQUITA',store:'QQ MUSIC / QQ MUSIC STARLIGHT'},'BABYMONSTER 中華 トレカ'],
+  [{store:'JINGDONG（京東）'},'BABYMONSTER 中華 トレカ'],
+  [{member:'RORA',store:'TME / TMEA（Tencent Music）'},'BABYMONSTER 中華 トレカ'],
+  [{member:'PHARITA',region:'中華限定'},'BABYMONSTER 中華 トレカ'],
+  [{member:'ASA',release:TOUR2},'BABYMONSTER 京セラ ラントレ'],
+  [{member:'ASA',venue:'京セラドーム'},'BABYMONSTER 京セラ ラントレ'],
+  [{type:'会場限定 / 複数会場'},'BABYMONSTER 京セラ ラントレ']
+])assert.ok(step2(input).includes(query),JSON.stringify(input)+' should suggest '+query);
+assert.ok(!allQueries({member:'ASA',venue:'ソウルコン'}).includes('BABYMONSTER 京セラ ラントレ'),'Another venue does not bring in the Kyocera term');
+for(const input of [{member:'RAMI'},{member:'RAMI',release:'DRIP (1st FULL ALBUM)'},{member:'RAMI',store:'MAKESTAR'},{member:'RAMI',type:'ラキドロ（抽選特典 / lucky draw）'}])
+  assert.deepEqual(allQueries(input).filter(q=>DISCOVERY.includes(q)),[],'No discovery term without a matching channel: '+JSON.stringify(input));
+assert.ok(step2({member:'RAMI',store:TOWER,type:WINNER,venue:'京セラドーム'}).filter(q=>DISCOVERY.includes(q)).length<=2,'At most two discovery terms per search');
+// Discovery terms take the lowest-ranked slots; the member's and the series' base queries stay (both are registered PR links).
+assert.ok(step2({member:'RUKA',release:'WE GO UP',store:TOWER,type:'ラキドロ'}).includes('BABYMONSTER ルカ トレカ'));
+for(const input of [{member:'RAMI',release:'DRIP (1st FULL ALBUM)',store:TOWER},{member:'RAMI',release:'DRIP (1st FULL ALBUM)',store:'QQ MUSIC / QQ MUSIC STARLIGHT'}]){
+  assert.ok(step2(input).includes('BABYMONSTER ラミ トレカ'),'Member base query kept: '+JSON.stringify(input));
+  assert.ok(step2(input).includes('BABYMONSTER DRIP トレカ'),'Series base query kept: '+JSON.stringify(input));
+}
+// The seller's spelling variant leads STEP 2 and says what it finds; group-wide 特典/限定 go last when a member is given.
+const chiquita=steps({member:'CHIQUITA'});
+assert.equal(chiquita[2][0].query,'BABYMONSTER チキタ トレカ');assert.match(chiquita[2][0].why,/チキタ.*チキータ/);
+const memberStep3=steps({member:'RAMI'})[3].map(q=>q.query);
+assert.ok(memberStep3.indexOf('BABYMONSTER トレカ 特典')>memberStep3.indexOf('BABYMONSTER ラミ まとめ売り'),'特典 goes after the member queries');
+assert.ok(steps({})[3].some(q=>q.query==='BABYMONSTER トレカ 特典'),'Without a member the generic words stay');
+
+// Link variants: a query can have an 'all' link and a price-band link. Each variant fixes its exact parameters.
+const sha=u=>createHash('sha256').update(u).digest('hex');
+const officialSearch=(query,extra={})=>'https://jp.mercari.com/search?'+new URLSearchParams({afid:'1722203408',keyword:query,...extra});
+const BAND_PARAMS={price_max:'39999',price_min:'2000',status:'on_sale'};
+const fq='BABYMONSTER ファリタ トレカ',bandUrl=officialSearch(fq,BAND_PARAMS);
+assert.equal(bandUrl,'https://jp.mercari.com/search?afid=1722203408&keyword=BABYMONSTER+%E3%83%95%E3%82%A1%E3%83%AA%E3%82%BF+%E3%83%88%E3%83%AC%E3%82%AB&price_max=39999&price_min=2000&status=on_sale','Same form as the official toolbar link');
+const linkRow=(query,url,variant)=>({query,variant,url,status:'ACTIVE',source:'mercari_official_link_only',verifiedAt:'2026-10-11T00:00:00Z',sha256:sha(url)});
+const bandRow=linkRow(fq,bandUrl,'band_2000_39999');
+const bandIndex=await make([bandRow]);
+assert.equal(bandIndex.size,1);
+assert.deepEqual(bandLink({query:fq},bandIndex),{url:bandUrl,pr:true},'Band URL is used byte-for-byte');
+assert.deepEqual(searchLink({query:fq},bandIndex),{url:'https://jp.mercari.com/search?keyword='+encodeURIComponent(fq),pr:false},'The main button stays a normal search');
+assert.equal(bandLink({query},bandIndex),null,'Queries without a band link get no band button');
+assert.equal(urlProblem(bandUrl,fq,'band_2000_39999'),'');
+for(const [url,variant] of [
+  [bandUrl,'all'],                                                     // band URL registered as a plain link
+  [officialSearch(fq),'band_2000_39999'],                              // plain URL registered as a band link
+  [officialSearch(fq,{...BAND_PARAMS,price_min:'3000'}),'band_2000_39999'],
+  [officialSearch(fq,{price_max:'39999',price_min:'2000'}),'band_2000_39999'],
+  [officialSearch(fq,{...BAND_PARAMS,sort:'price'}),'band_2000_39999'],
+  [bandUrl+'&price_min=2000','band_2000_39999'],
+  [officialSearch(fq,{sort:'price'}),'all'],
+  [bandUrl,'band_x']
+]){
+  assert.ok(urlProblem(url,fq,variant),'Rejected: '+variant+' '+url);
+  assert.equal((await make([linkRow(fq,url,variant)])).size,0,'Index rejects: '+variant+' '+url);
+}
+// Same query with both variants: both are valid, the card shows one PR button (the band one) and a normal main button.
+const allUrl=officialSearch(fq),both=await make([linkRow(fq,allUrl,'all'),bandRow]);
+assert.equal(both.size,2,'Duplicate check is per query and variant');
+assert.equal(searchLink({query:fq},both).pr,false);assert.equal(bandLink({query:fq},both).url,bandUrl);
+assert.deepEqual(searchLink({query:fq},await make([linkRow(fq,allUrl,'all')])),{url:allUrl,pr:true},'An all-only query keeps its PR main button');
+const dup=await make([linkRow(fq,allUrl,'all'),bandRow,{...bandRow}]);
+assert.equal(dup.size,1,'Two band rows for one query fail closed, the all link stays');assert.equal(bandLink({query:fq},dup),null);assert.equal(searchLink({query:fq},dup).pr,true);
+// At most MAX_BAND_BUTTONS band buttons per result, in display order.
+const many=['A','B','C','D','E'].map(x=>'BABYMONSTER '+x+' トレカ');
+const manyIndex=await make(many.map(q=>linkRow(q,officialSearch(q,BAND_PARAMS),'band_2000_39999')));
+assert.deepEqual([...bandedItems([{query:'x'},...many.map(query=>({query}))],manyIndex)].map(i=>i.query),many.slice(0,MAX_BAND_BUTTONS));
+assert.equal(bandAttrs.rel.includes('sponsored'),true);assert.match(bandAttrs.text,/（PR）/);
+
+// AFFILIATE_LINKS with the five PILOT 03 columns: only query/variant/url/status/source/verifiedAt/sha256 are published.
+const head=['pattern_id','group_id','member_id','series_id','benefit_id','type_id','normalized_query','affiliate_url','status','verified_at','source','url_sha256','note','link_variant','category','eval','evaluated_at','review_due'];
+const pRow=(q,u,variant,status='ACTIVE')=>['p3_x','babymonster','','','','',q,u,status,'2026-10-11T04:00:00Z','mercari_official_link_only',sha(u),'採用理由メモ',variant,'表記揺れ','D107 P87 R101','2026-10-11','2027-01-09'];
+const p3=structuredClone(sheetMatrix);
+p3.AFFILIATE_LINKS=[head,pRow(officialQuery,officialUrl,'all'),pRow(fq,bandUrl,'band_2000_39999'),pRow(fq,allUrl,''),pRow(fq,bandUrl,'band_9'),pRow('BABYMONSTER ロラ トレカ',officialSearch('BABYMONSTER ロラ トレカ',BAND_PARAMS),'band_2000_39999','HELD')];
+const p3Catalog=publicCatalog(p3);
+assert.deepEqual(validateCatalog(p3Catalog),[]);
+assert.deepEqual(p3Catalog.affiliateLinks.map(l=>[l.query,l.variant,l.url]),[[officialQuery,'all',officialUrl],[fq,'band_2000_39999',bandUrl],[fq,'all',allUrl]],'Blank link_variant is all; unknown variants and HELD rows are not published');
+assert.deepEqual(Object.keys(p3Catalog.affiliateLinks[0]),['query','variant','url','status','source','verifiedAt','sha256']);
+assert.ok(!/D107|表記揺れ|2027-01-09|採用理由/.test(JSON.stringify(p3Catalog)),'Evaluation columns never reach the public catalog');
+p3.AFFILIATE_LINKS.push(pRow(fq,bandUrl,'band_2000_39999'));
+assert.deepEqual(publicCatalog(p3).affiliateLinks.map(l=>l.variant),['all','all'],'A duplicated query+variant is dropped, other variants stay');
+assert.ok(leak(c=>{c.affiliateLinks[0].variant='band_x';}),'Unknown variant is rejected');
+assert.ok(leak(c=>{delete c.affiliateLinks[0].variant;}),'Missing variant is rejected');
+assert.ok(leak(c=>{c.affiliateLinks[0].eval='D1';}),'Evaluation key is rejected');
+assert.ok(catalog.affiliateLinks.every(l=>l.variant==='all'),'The 24 live links are all-variant links');
+console.log(JSON.stringify({regression:{pass,fail:0,review},dictionary:{total:275,active:248},linkValidation:'PASS',publicExport:'PASS',publicWhitelist:'PASS',affiliateStates:'PASS',discoveryTerms:'PASS',linkVariants:'PASS'}));

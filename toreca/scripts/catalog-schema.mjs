@@ -1,10 +1,12 @@
 // Public catalog whitelist. Every key that reaches data/catalog.json must be listed here.
+import {VARIANTS} from '../links.js';
 export const SCHEMA='toreca-public-v1';
 export const DICTIONARY_TABS=['GROUP_DB','MEMBER_DB','RELEASE_DB','STORE_DB','TYPE_DB'];
 export const DICTIONARY_KEYS=DICTIONARY_TABS.map(tab=>tab.replace('_DB','').toLowerCase());
 export const DICTIONARY_COLUMNS=['entry_key','canonical','alias','alias_kind','pilot01_use','priority','search_step'];
 export const ADVISORY_KEYS=['id','show'];
-export const AFFILIATE_KEYS=['query','url','status','source','verifiedAt','sha256'];
+// Internal AFFILIATE_LINKS columns (category, eval, evaluated_at, review_due, note) are never published.
+export const AFFILIATE_KEYS=['query','variant','url','status','source','verifiedAt','sha256'];
 const TOP_KEYS=['schema','updatedAt','affiliateEnabled','affiliateLinks','db'];
 // Text that only appears in internal notes, logs or the admin account.
 export const PRIVATE_PATTERNS=[/google\.script|SpreadsheetApp|FROZEN_B64/i,/[\w.+-]+@[\w-]+\.[\w.]+/,/\.md\b|§/,/PILOT\s*0\d/i,/人力リサーチ|研究|research/i,/session_id|researcher_note|retention_days|telemetry/i];
@@ -30,7 +32,7 @@ export function validateCatalog(catalog) {
   if(!Number.isFinite(Date.parse(catalog.updatedAt)))errors.push('updatedAt must be a date');
   if(typeof catalog.affiliateEnabled!=='boolean')errors.push('affiliateEnabled must be boolean');
   if(!Array.isArray(catalog.affiliateLinks))errors.push('affiliateLinks must be an array');
-  else catalog.affiliateLinks.forEach((row,i)=>exact(row,AFFILIATE_KEYS,'affiliateLinks['+i+']',errors));
+  else catalog.affiliateLinks.forEach((row,i)=>{exact(row,AFFILIATE_KEYS,'affiliateLinks['+i+']',errors);if(!Object.hasOwn(VARIANTS,row?.variant))errors.push('affiliateLinks['+i+'] has an unknown variant');});
   if(catalog.affiliateEnabled!==true&&catalog.affiliateLinks?.length)errors.push('affiliateLinks must be empty while affiliate is disabled');
   exact(catalog.db,[...DICTIONARY_KEYS,'rules'],'db',errors);
   if(errors.length)return errors;
