@@ -1,9 +1,8 @@
 import {createSign,createHash} from 'node:crypto';
 import {readFile,writeFile,rename} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
+import {SCHEMA,DICTIONARY_TABS as tabs,DICTIONARY_COLUMNS as columns,publicRules,validateCatalog} from './catalog-schema.mjs';
 const catalogPath=fileURLToPath(new URL('../data/catalog.json',import.meta.url));
-const tabs=['GROUP_DB','MEMBER_DB','RELEASE_DB','STORE_DB','TYPE_DB'];
-const columns=['entry_key','canonical','alias','alias_kind','pilot01_use','priority','search_step'];
 const objects=rows=>{if(!rows?.length)throw new Error('Required sheet is empty');return rows.slice(1).filter(r=>r[0]).map(row=>Object.fromEntries(rows[0].map((name,i)=>[name,row[i]??''])));};
 const clean=value=>String(value??'');
 export function publicCatalog(matrix,previous) {
@@ -17,7 +16,7 @@ export function publicCatalog(matrix,previous) {
   if(!db.group.some(r=>r.alias==='BABYMONSTER'))throw new Error('Missing target group');
   const parts=matrix.SEARCH_RULES?.slice(1).filter(r=>r[0]).sort((a,b)=>Number(a[0])-Number(b[0]));
   const rules=JSON.parse(parts.map(r=>r[2]??'').join(''));
-  db.rules={advisory_notes:JSON.parse(clean(JSON.stringify(rules.advisory_notes||{codes:[]})))};
+  db.rules=publicRules(rules);
   const settings=Object.fromEntries((matrix.PILOT02_SETTINGS||[]).slice(1).map(r=>[r[0],r[1]]));
   const enabled=String(settings.affiliate_enabled).toUpperCase()==='TRUE';
   const affiliateLinks=[];
@@ -35,9 +34,11 @@ export function publicCatalog(matrix,previous) {
       affiliateLinks.push({query:row.normalized_query,url:row.affiliate_url,status:'ACTIVE',source:row.source,verifiedAt:row.verified_at,sha256:hash});
     }catch { /* Invalid rows are never published as affiliate links. */ }
   }
-  const catalog={schema:'toreca-public-v1',updatedAt:new Date().toISOString(),affiliateEnabled:enabled,affiliateLinks,db};
+  const catalog={schema:SCHEMA,updatedAt:new Date().toISOString(),affiliateEnabled:enabled,affiliateLinks,db};
   const stable=x=>JSON.stringify({...x,updatedAt:''});
   if(previous&&stable(previous)===stable(catalog))catalog.updatedAt=previous.updatedAt;
+  const errors=validateCatalog(catalog);
+  if(errors.length)throw new Error('Public catalog failed validation: '+errors.slice(0,5).join('; '));
   return catalog;
 }
 async function fetchJson(url,options) {
