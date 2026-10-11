@@ -36,7 +36,7 @@ PR表示・購入による運営者への報酬説明・明示クリックを使
 
 | 項目 | 状態 |
 | --- | --- |
-| 管理DB `AFFILIATE_LINKS` | 24候補のうち5件が `ACTIVE`（`BABYMONSTER アヒョン / チキータ / ラミ / ローラ / ルカ トレカ`）。公式ツールバーの「リンクのみ」で発行したURLをそのまま登録。残り19件は `UNREGISTERED` |
+| 管理DB `AFFILIATE_LINKS` | 24候補すべて `ACTIVE`。公式ツールバーの「リンクのみ」で発行したURLをそのまま登録（メンバー7人 × 指定なし / DRIP / CHOOM の21件と、`BABYMONSTER DRIP / CHOOM / ラキドロ トレカ`）。DRIP / CHOOM の組み合わせは、シリーズをドロップダウンで選んだときに公式表記を使う修正（ブランチ `fix/toreca-release-dropdown-alias`）を入れるまで、手がかり入力からしか生成されない |
 | 管理DB `PILOT02_SETTINGS` の `affiliate_enabled` | `FALSE` |
 | 公開データ `data/catalog.json` | `affiliateEnabled:false`、`affiliateLinks:[]`。サイト上はすべて通常リンクで、PR表示も出ない |
 
