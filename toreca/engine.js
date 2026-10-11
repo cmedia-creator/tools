@@ -898,7 +898,14 @@ function releaseAliases_(resolved, input, db) {
 
   const key = resolved.RELEASE.entryKey;
   const rows = activeEntryRows_(db.release, key);
-  const inputRow = resolved.RELEASE.row;
+  const resolvedRow = resolved.RELEASE.row;
+  // The dropdown sends the canonical name, which matches every alias row of the entry; resolveValue_ then
+  // picks the longest alias (e.g. "1st FULL ALBUM" for DRIP). Treat that as naming the entry: lead with the
+  // official alias and keep the long alias as the second STEP 1 variant.
+  const target = normalize_(input && input.release);
+  const byCanonical =
+    !!resolvedRow && !!target && target === normalize_(resolvedRow.canonical) && target !== normalize_(resolvedRow.alias);
+  const inputRow = byCanonical ? null : resolvedRow;
 
   let official =
     aliasByKind_(db.release, key, ['type_official']) ||
@@ -920,6 +927,15 @@ function releaseAliases_(resolved, input, db) {
   }
 
   const step1Variants = primary ? [primary] : [];
+
+  if (
+    byCanonical &&
+    isOutputAlias_(resolvedRow) &&
+    !['legacy_wrong', 'confusable', 'ja_unverified'].includes(resolvedRow.alias_kind) &&
+    normalize_(resolvedRow.alias) !== normalize_(primary)
+  ) {
+    step1Variants.push(resolvedRow.alias);
+  }
 
   if (inputRow && !isOutputAlias_(inputRow)) {
     specificReleaseAlts_({

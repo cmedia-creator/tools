@@ -106,4 +106,10 @@ for(const q of cards){
   if(q.query===officialQuery){assert.deepEqual(link,{url:officialUrl,pr:true});assert.match(attrs.text,/（PR）/);assert.match(attrs.rel,/sponsored/);}
   else{assert.deepEqual(link,{url:q.mercariUrl,pr:false});assert.doesNotMatch(attrs.text,/PR/);assert.doesNotMatch(attrs.rel,/sponsored/);}
 }
+// Release dropdown values are canonical names: lead with the official alias, keep the long alias as the second STEP 1 query.
+const step1=input=>generate(sanitize(input),catalog.db).steps[1].map(q=>q.query);
+assert.deepEqual(step1({member:'RAMI',release:'DRIP (1st FULL ALBUM)'}).slice(0,2),['BABYMONSTER ラミ DRIP トレカ','BABYMONSTER ラミ 1st FULL ALBUM トレカ']);
+assert.deepEqual(step1({member:'RUKA',release:'CHOOM / 춤 (3rd MINI ALBUM)'}).slice(0,2),['BABYMONSTER ルカ CHOOM トレカ','BABYMONSTER ルカ 3rd MINI ALBUM トレカ']);
+assert.equal(step1({member:'RAMI',release:'1st FULL ALBUM'})[0],'BABYMONSTER ラミ 1st FULL ALBUM トレカ','An alias typed as the release is used as given');
+assert.ok(!step1({member:'RAMI',release:'HOT SAUCE'}).some(q=>/HOT SOURCE/.test(q)),'Misspelled aliases are not promoted to STEP 1');
 console.log(JSON.stringify({regression:{pass,fail:0,review},dictionary:{total:275,active:248},linkValidation:'PASS',publicExport:'PASS',publicWhitelist:'PASS',affiliateStates:'PASS'}));
