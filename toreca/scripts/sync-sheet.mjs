@@ -60,9 +60,14 @@ export async function sync() {
   names.forEach(name=>url.searchParams.append('ranges',name+'!A1:M1001'));url.searchParams.set('valueRenderOption','UNFORMATTED_VALUE');
   const response=await fetchJson(url,{headers:{Authorization:'Bearer '+token.access_token}});
   const matrix=Object.fromEntries(names.map((name,i)=>[name,response.valueRanges[i]?.values||[]]));
+  await writeCatalog(matrix);
+}
+// Shared by the API sync and the browser export import. Writes only a validated catalog.
+export async function writeCatalog(matrix) {
   const previous=JSON.parse(await readFile(catalogPath,'utf8')),catalog=publicCatalog(matrix,previous);
-  const text=JSON.stringify(catalog)+'\n';if(text===JSON.stringify(previous)+'\n'){console.log('Public catalog is unchanged.');return;}
+  const text=JSON.stringify(catalog)+'\n';if(text===JSON.stringify(previous)+'\n'){console.log('Public catalog is unchanged.');return false;}
   await writeFile(catalogPath+'.tmp',text);await rename(catalogPath+'.tmp',catalogPath);
   console.log('Published dictionary rows:',tabs.reduce((n,name)=>n+catalog.db[name.replace('_DB','').toLowerCase()].length,0));
+  return true;
 }
 if(process.argv[1]===fileURLToPath(import.meta.url))sync().catch(error=>{console.error(error.message);process.exitCode=1;});

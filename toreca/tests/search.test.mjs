@@ -5,6 +5,7 @@ import {generate,sanitize,entryOptions,venueOptions} from '../engine.js';
 import {linkIndex,searchLink} from '../links.js';
 import {publicCatalog} from '../scripts/sync-sheet.mjs';
 import {validateCatalog} from '../scripts/catalog-schema.mjs';
+import {matrixFromExport} from '../scripts/import-sheet-export.mjs';
 const catalog=JSON.parse(await readFile(new URL('../data/catalog.json',import.meta.url),'utf8'));
 const cases=JSON.parse(await readFile(new URL('./fixtures.json',import.meta.url),'utf8'));
 const normalize=q=>q.normalize('NFKC').toLowerCase().split(/\s+/).filter(Boolean).sort().join(' ');
@@ -34,6 +35,11 @@ matrix.SEARCH_RULES=[['part','count','json_chunk'],[1,1,JSON.stringify(catalog.d
 matrix.PILOT02_SETTINGS=[['key','value'],['affiliate_enabled','FALSE']];
 matrix.AFFILIATE_LINKS=[['normalized_query','affiliate_url','status']];
 assert.equal(publicCatalog(matrix,catalog).updatedAt,catalog.updatedAt,'No timestamp churn');
+// Browser export (display text only) converts back to the same public catalog.
+const asText=rows=>rows.map(r=>r.map(c=>c===true?'TRUE':c===false?'FALSE':String(c??'')));
+const exported={format:'toreca-sheet-export-v1',matrix:Object.fromEntries(Object.entries(matrix).map(([k,v])=>[k,asText(v)]))};
+assert.equal(JSON.stringify(publicCatalog(matrixFromExport(exported),catalog)),JSON.stringify(catalog),'Browser export round-trips to the published catalog');
+assert.throws(()=>matrixFromExport({format:'toreca-sheet-export-v1',matrix:{}}),/missing/);
 matrix.GROUP_DB[1].push('not exported');assert.ok(!JSON.stringify(publicCatalog(matrix)).includes('not exported'));
 // Public data whitelist: internal rule notes are dropped, and anything outside the whitelist fails validation.
 assert.deepEqual(validateCatalog(catalog),[],'Published catalog matches the public whitelist');

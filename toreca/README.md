@@ -15,20 +15,14 @@
 
 ## 更新
 
-初回データはGoogle Drive接続から取得したライブDBのスナップショット。スプレッドシートを編集するだけでは現状の公開データは変わらない。
+スプレッドシートを編集するだけでは公開データは変わらない。管理者がブラウザで書き出し、ローカルで検証してmainへ反映する（GitHub Pagesはmainから自動公開）。
 
-管理者の端末またはGitHub Actionsで `node toreca/scripts/sync-sheet.mjs` を実行し、生成JSONをmainに反映すると公開データを更新できる。同期処理はGoogle Sheets APIの読み取り専用スコープを使い、DBを変更しない。
+1. ログイン済みのブラウザで管理DBを開き、`scripts/sheet-export.browser.js` の内容をそのページで実行する。左上に出るテキスト欄をクリックすると、書き出しJSONがクリップボードにコピーされる。読み取るのは公開カタログに必要な8シートだけで、DBは変更しない。
+2. クリップボードの内容をリポジトリ外のファイルに保存する（内部列を含むためコミットしない）。
+3. `cd toreca && npm run import -- <保存したファイル>` で `data/catalog.json` を再生成する。ホワイトリスト検証に失敗した場合は書き換えない。変更がなければ「unchanged」と表示される。
+4. `npm test` が通ることを確認し、`data/catalog.json` をコミットしてmainへpushする。
 
-### 無人同期に必要な管理者設定（未設定）
-
-1. Google CloudでSheets APIを有効にし、読み取り用サービスアカウントを用意。
-2. 管理DBを、そのサービスアカウントのメールに閲覧権限で共有。
-3. GitHubのRepository Secretsに `GOOGLE_SERVICE_ACCOUNT_JSON`（認証JSON）と `GOOGLE_SHEET_ID` を登録。キーは公開ファイルや会話に貼らない。
-4. `toreca/scripts/sync-sheet.mjs` で更新し、検証後にmainへ反映。GitHub Actionsの自動同期はSecrets登録後に有効化する。
-
-既存GitHub Pagesの公開方式はmainブランチからの自動デプロイ。Actionsの標準 `GITHUB_TOKEN` によるコミットはPagesの自動ビルドを発火しないため、自動同期を有効化する際はデプロイの実行経路も設定・確認すること。
-
-接続済みGoogle Driveから公開JSONを更新する手動同期は、サービスアカウント作成前でも可能。
+Google Sheets APIで取得する `npm run sync`（`GOOGLE_SHEET_ID` と `GOOGLE_SERVICE_ACCOUNT_JSON` が必要）も同じ変換・検証を使う。無人の自動同期は現時点では設定しない。
 
 ## アフィリエイト
 

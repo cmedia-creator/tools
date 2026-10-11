@@ -1,1 +1,1 @@
-{"name":"toreca-search","private":true,"type":"module","scripts":{"test":"node tests/search.test.mjs","sync":"node scripts/sync-sheet.mjs"}}
+{"name":"toreca-search","private":true,"type":"module","scripts":{"test":"node tests/search.test.mjs","sync":"node scripts/sync-sheet.mjs","import":"node scripts/import-sheet-export.mjs"}}
