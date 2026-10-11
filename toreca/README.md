@@ -28,6 +28,19 @@ Google Sheets APIで取得する `npm run sync`（`GOOGLE_SHEET_ID` と `GOOGLE_
 
 公式機能で発行した検索結果URLだけを `AFFILIATE_LINKS` に登録。`status=ACTIVE`、`source=mercari_official_link_only`、検索語一致、SHA-256一致、重複なしを確認し、`PILOT02_SETTINGS` の `affiliate_enabled` をTRUEにした場合のみ有効にする。URLは一切加工しない。未登録・無効な条件は通常リンク。利用方法の規約確認を完了してから有効化する。
 
+### リンクの種類（`link_variant`）
+
+1つの検索語に、種類ごとに1件ずつ登録できる。重複判定は「検索語＋種類」。同じ組み合わせが2行あると、その組み合わせは無効（通常リンク）になる。
+
+| 種類 | URL のパラメータ（これ以外は不可） | 表示 |
+| --- | --- | --- |
+| `all`（空欄も `all`） | `afid`, `keyword` | メインのボタンが「メルカリで探す（PR）」になる（既存24件） |
+| `band_2000_39999` | `afid`, `keyword`, `price_max=39999`, `price_min=2000`, `status=on_sale` | メインは通常の検索のまま、下に「¥2,000〜の販売中を見る（PR）」を追加 |
+
+- 1枚のカードに PR ボタンは最大1つ。同じ検索語に両方あるときは band を表示し、メインは通常の検索に戻す。
+- band ボタンは1回の検索結果で最大3つ（表示順に先頭から）。
+- `category` / `eval` / `evaluated_at` / `review_due` / `note` は管理用で、公開データには出さない（`catalog-schema.mjs` のホワイトリスト）。
+
 PR表示・購入による運営者への報酬説明・明示クリックを使用。自動遷移や中間リダイレクトはしない。クリック計測を追加する際は、広告リンクのリファラを隠さず、プライバシー説明も更新する。
 
 公式ガイドライン: https://help.jp.mercari.com/guide/articles/1486/
